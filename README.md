@@ -20,7 +20,7 @@ This container was designed to be started first to provide a connection to other
 
     docker run -ti --cap-add=NET_ADMIN --device /dev/net/tun --name vpn\
                 -e USER=user@email.com -e PASS=password
-                -e COUNRTY=country1;country2 -e CATEGORY=category1;category2 \
+                -e COUNRTY="country1;country2" -e CATEGORY=category1;category2 \
                 -e PROTOCOL=protocol -d bubuntux/nordvpn
 
 Once it's up other containers can be started using it's network connection:
@@ -68,7 +68,7 @@ For multiple services (non-existant 'foo' used as an example):
 
 ENVIRONMENT VARIABLES (only available with `docker run`)
 
- * `COUNTRY`  - Use servers from countries in the list (IE Australia;New Zeland). Several countries can be selected using semicolon.
+ * `COUNTRY`  - Use servers from countries in the list (IE United States;Australia;New Zeland). Several countries can be selected using semicolon.
  * `CATEGORY` - Use servers from specific categories (IE P2P;Anti DDoS). Several categories can be selected using semicolon. Allowed categories are:
    * `Anti DDoS`
    * `Dedicated IP servers`
