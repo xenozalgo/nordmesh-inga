@@ -1,4 +1,4 @@
-[![logo](https://github.com/azinchen/nordvpn/raw/master/NordVpn_logo.png)](https://www.nordvpn.com/)
+[![logo](https://github.com/bubuntux/nordvpn/raw/master/NordVpn_logo.png)](https://ref.nordvpn.com/?id=171828599)
 
 # NordVPN
 
@@ -21,7 +21,7 @@ This container was designed to be started first to provide a connection to other
     docker run -ti --cap-add=NET_ADMIN --device /dev/net/tun --name vpn\
                 -e USER=user@email.com -e PASS=password
                 -e COUNRTY=country1;country2 -e CATEGORY=category1;category2 \
-                -e PROTOCOL=protocol -d azinchen/nordvpn
+                -e PROTOCOL=protocol -d bubuntux/nordvpn
 
 Once it's up other containers can be started using it's network connection:
 
@@ -37,7 +37,7 @@ The environmenta variable NETWORK must be your local network that you would conn
 
     docker run -ti --cap-add=NET_ADMIN --device /dev/net/tun --name vpn \
                 -p 8080:80 -e NETWORK=192.168.1.0/24 \ 
-                -e USER=user@email.com -e PASS=password -d azinchen/nordvpn
+                -e USER=user@email.com -e PASS=password -d bubuntux/nordvpn                
 
 Now just create the second container _without_ the `-p` parameter, only inlcude the `--net=container:vpn`, the port should be declare in the vpn container.
 
@@ -87,4 +87,4 @@ ENVIRONMENT VARIABLES (only available with `docker run`)
 
 ## Issues
 
-If you have any problems with or questions about this image, please contact me through a [GitHub issue](https://github.com/azinchen/nordvpn/issues) or [email](mailto:alexander@zinchenko.com).
+If you have any problems with or questions about this image, please contact me through a [GitHub issue](https://github.com/bubuntux/nordvpn/issues).

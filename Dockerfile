@@ -1,6 +1,6 @@
-FROM alpine:latest
+FROM alpine:3.7
 
-MAINTAINER Alexander Zinchenko <alexander@zinchenko.com>
+LABEL maintainer="Julio Gutierrez <bubuntux@gmail.com>"
 
 COPY nordVpn.sh /usr/bin
 
