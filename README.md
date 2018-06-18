@@ -66,7 +66,7 @@ For multiple services (non-existant 'foo' used as an example):
                 -w "http://bit:9091/transmission;/transmission" \
                 -w "http://foo:8000/foo;/foo"
 
-ENVIRONMENT VARIABLES (only available with `docker run`)
+## ENVIRONMENT VARIABLES (only available with `docker run`)
 
  * `COUNTRY`  - Use servers from countries in the list (IE United States;Australia;New Zeland). Several countries can be selected using semicolon.
  * `CATEGORY` - Use servers from specific categories (IE P2P;Anti DDoS). Several categories can be selected using semicolon. Allowed categories are:
