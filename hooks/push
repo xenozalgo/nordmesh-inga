@@ -1,0 +1,34 @@
+#!/bin/bash
+source hooks/_env
+
+manifestPush(){
+  local version=$1
+  local images
+  for arch in ${X86} ${ARM} ; do
+    images+="${DOCKER_REPO}:${arch}-${version} "
+  done
+  echo "**** Creating manifest ${DOCKER_REPO}:${version} ****"
+  docker manifest create ${DOCKER_REPO}:${version} ${images}
+  for arch in ${X86} ${ARM} ; do
+    echo "**** Annotating manifest ${DOCKER_REPO}:${arch}-${version} ****"
+    docker manifest annotate ${DOCKER_REPO}:${version} ${DOCKER_REPO}:${arch}-${version} --os linux --arch $(manifestArch ${arch})
+  done
+  echo "**** Pushing manifest ${DOCKER_REPO}:${version} ****"
+  docker manifest push --purge ${DOCKER_REPO}:${version}
+}
+
+for arch in ${X86} ${ARM} ; do
+  echo "**** Pushing ${arch}-${VERSION} ****"
+  docker push "${DOCKER_REPO}:${arch}-${VERSION}"
+done
+manifestPush ${VERSION}
+
+if [[ "${GIT_BRANCH}" == "master" ]]; then
+  for arch in ${X86} ${ARM} ; do
+    echo "**** Tagging ${arch}-latest ****"
+    docker tag "${DOCKER_REPO}:${arch}-${VERSION}" "${DOCKER_REPO}:${arch}-latest"
+    echo "**** Pushing ${arch}-latest ****"
+    docker push "${DOCKER_REPO}:${arch}-latest"
+  done
+  manifestPush "latest"
+fi

@@ -1,23 +1,19 @@
-FROM alpine:3.7
+ARG ARCH=amd64
+FROM balenalib/${ARCH}-alpine
 
 LABEL maintainer="Julio Gutierrez <bubuntux@gmail.com>"
 
+#CROSSRUN [ "cross-build-start" ]
+RUN apk --no-cache --no-progress upgrade && \
+    apk --no-cache --no-progress add bash curl jq ip6tables iptables openvpn shadow tini tzdata && \
+    addgroup -S vpn && \
+    rm -rf /tmp/*
+#CROSSRUN [ "cross-build-end" ]
+
+VOLUME ["/vpn"]
+
+HEALTHCHECK --timeout=15s --interval=60s --start-period=120s \
+            CMD curl -fL "https://api.ipify.org" || exit 1
+
 COPY nordVpn.sh /usr/bin
-
-HEALTHCHECK --start-period=15s --timeout=15s --interval=60s \
-            CMD curl -fL 'https://api.ipify.org' || exit 1
-
-ENV URL_NORDVPN_API="https://api.nordvpn.com/server" \
-    URL_RECOMMENDED_SERVERS="https://nordvpn.com/wp-admin/admin-ajax.php?action=servers_recommendations" \
-    URL_OVPN_FILES="https://downloads.nordcdn.com/configs/archives/servers/ovpn.zip" \
-    MAX_LOAD=70
-
-VOLUME ["/vpn/ovpn/"]
-
-    # Install dependencies 
-RUN apk --no-cache --no-progress update && \
-    apk --no-cache --no-progress upgrade && \
-    apk --no-cache --no-progress add bash curl unzip iptables ip6tables jq openvpn tini && \
-    mkdir -p /vpn/ovpn/
-
 ENTRYPOINT ["/sbin/tini", "--", "/usr/bin/nordVpn.sh"]
