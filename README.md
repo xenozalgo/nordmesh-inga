@@ -83,7 +83,7 @@ services:
     network_mode: service:vpn
 ```
 
-## ENVIRONMENT VARIABLES
+# ENVIRONMENT VARIABLES
 
  * `USER`     - User for NordVPN account.
  * `PASS`     - Password for NordVPN account.
@@ -102,6 +102,9 @@ services:
  * `TZ` - Set a timezone (IE EST5EDT, America/Denver, [full list](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones))
  * `GROUPID` - Set the GID for the vpn
 
-## Issues
+# Versions 
+ * **2019.02.27** - Use recommended service api, add multiple architectures.
+
+# Issues
 
 If you have any problems with or questions about this image, please contact me through a [GitHub issue](https://github.com/bubuntux/nordvpn/issues).

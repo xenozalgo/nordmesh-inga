@@ -1,6 +1,6 @@
 #!/bin/bash
 if [[ ! -f "/tmp/${SOURCE_COMMIT}" ]]; then
-  ver=`date -u +"%Y.%m.%d-%H.%M"`
+  ver=`date -u +"%Y.%m.%d"`
   if [[ "${GIT_BRANCH}" != "master" ]]; then
     ver+="-${GIT_BRANCH}"
   fi
