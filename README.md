@@ -101,7 +101,7 @@ services:
  * `GROUPID` - Set the GID for the vpn
 
 # Versions 
- * **2019.02.28** - Add documentation on passwords with special characters, refactor to avoid issue [#20](https://github.com/bubuntux/nordvpn/issues/20) and override auth file when need it
+ * **2019.03.01** - Add documentation on passwords with special characters, refactor to avoid issue [#20](https://github.com/bubuntux/nordvpn/issues/20) and override auth file when need it
  * **2019.02.27** - Use recommended service api, add multiple architectures.
 
 # Issues
