@@ -59,13 +59,17 @@ download_ovpn() { # Download ovpn files into the specified directory
 
     mkdir -p ${ovpn_dir}
     if [[ $(ls -A ${ovpn_dir} | wc -l) -eq 0 ]]; then
-        echo "Downloading config files..." > /dev/stderr
         white_list ${nordvpn_ovpn}
+        echo "Downloading config files..." > /dev/stderr
         curl -s ${nordvpn_ovpn} -o /tmp/ovpn.zip
         mkdir -p /tmp/ovpn/
         unzip -q /tmp/ovpn.zip -d /tmp/ovpn
         mv /tmp/ovpn/*/*.ovpn ${ovpn_dir}
         rm -rf /tmp/*
+    fi
+    if [[ $(ls -A ${ovpn_dir} | wc -l) -eq 0 ]]; then
+        echo "Unable to download config files" > /dev/stderr
+        kill -s TERM ${TOP_PID} ; return
     fi
 
     echo ${ovpn_dir}
@@ -113,12 +117,12 @@ technology_filter() { # curl -s "https://api.nordvpn.com/v1/technologies" | jq -
     fi
 }
 
-select_hostname() {
+select_hostname() { #TODO return multiples
     local nordvpn_api="https://api.nordvpn.com" \
           filters hostname
 
-    echo "Selecting the best server..." > /dev/stderr
     white_list ${nordvpn_api}
+    echo "Selecting the best server..." > /dev/stderr
     filters+="$(country_filter ${nordvpn_api})"
     filters+="$(group_filter ${nordvpn_api})"
     filters+="$(technology_filter )"
@@ -134,9 +138,9 @@ select_hostname() {
 }
 
 select_config_file() {
-    local hostname=$(select_hostname) \
-          ovpn_dir=$1 \
-          post_fix
+    local ovpn_dir=$1 \
+          hostname=$(select_hostname) \
+          post_fix config_file
 
     if [[ ${PROTOCOL,,} =~ .*udp.* ]]; then
         post_fix=".udp.ovpn"
@@ -144,19 +148,29 @@ select_config_file() {
         post_fix=".tcp.ovpn"
     fi
 
-    echo "${ovpn_dir}/$(ls ${ovpn_dir} | grep "${hostname}${post_fix}" | tail -n 1)"
+    config_file="${ovpn_dir}/$(ls ${ovpn_dir} | grep "${hostname}${post_fix}" | shuf | head -n 1)"
+    if [[ ! -f ${config_file} ]]; then
+        echo "Unable to find config file ${config_file}" > /dev/stderr
+        kill -s TERM ${TOP_PID} ; return
+    fi
+
+    echo "Using config file ${config_file}..." > /dev/stderr
+    echo ${config_file}
 }
 
 write_auth_file() {
     local auth_file="/vpn/auth"
 
-    if [[ ! -f ${auth_file} && ! -z ${USER} &&  ! -z ${PASS} ]]; then
+    if [[ -z ${USER} || -z ${PASS} ]]; then
+        if [[ ! -f ${auth_file} ]]; then
+            echo "Missing USER or PASS" > /dev/stderr
+            kill -s TERM ${TOP_PID} ; return
+        fi
+    else
         echo "${USER}" > ${auth_file}
         echo "${PASS}" >> ${auth_file}
     fi
-    if [[ -f ${auth_file} ]]; then
-        chmod 0600 ${auth_file}
-    fi
+    chmod 0600 ${auth_file}
 
     echo ${auth_file}
 }
@@ -169,33 +183,21 @@ elif [[ $# -ge 1 ]]; then
 elif ps -ef | egrep -v 'grep|nordVpn.sh' | grep -q openvpn; then
     echo "Service already running, please restart container to apply changes"
 else
-    [[ ${GROUPID:-""} =~ ^[0-9]+$ ]] && groupmod -g ${GROUPID} -o vpn
-
-    firewall # TODO optional
-
-    ovpn_dir=$(download_ovpn)
-    if [[ $(ls -A ${ovpn_dir} | wc -l) -eq 0 ]]; then
-        echo "Unable to download config files"
-        exit 1
-    fi
-
-    config_file=$(select_config_file ${ovpn_dir})
-    if [[ ! -f ${config_file} ]]; then
-        echo "Unable to find config file ${config_file}"
-        exit 1
-    fi
-    echo "Using config file ${config_file}..."
+    trap "exit 1" TERM
+    TOP_PID=$$
 
     auth_file=$(write_auth_file)
-    if [[ ! -f ${auth_file} ]]; then
-        echo "Missing auth file, USER or PASS"
-        exit 1
-    fi
+
+    [[ ${GROUPID:-""} =~ ^[0-9]+$ ]] && groupmod -g ${GROUPID} -o vpn
+    firewall
+
+    ovpn_dir=$(download_ovpn)
+    config_file=$(select_config_file ${ovpn_dir})
 
     mkdir -p /dev/net
     [[ -c /dev/net/tun ]] || mknod -m 0666 /dev/net/tun c 10 200
 
     echo "Connecting..."
     exec sg vpn -c "openvpn --config ${config_file} --auth-user-pass ${auth_file} --auth-nocache \
-                            --script-security 2 --up /etc/openvpn/up.sh --down /etc/openvpn/down.sh" # TODO optional
+                            --script-security 2 --up /etc/openvpn/up.sh --down /etc/openvpn/down.sh"
 fi

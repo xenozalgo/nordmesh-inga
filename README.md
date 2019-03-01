@@ -18,9 +18,9 @@ This image use [docker manifest for multi-platform awareness](https://github.com
 | Architecture      | Tag | 
 | :----:            | :---: | 
 | Linux x86-64      | amd64-latest | 
-| ARMv7 32-bit      | armv7hf-latest | 
-| ARMv8 64-bit      | aarch64-latest | 
 | Linux x86/i686    | i386-latest |
+| ARMv8 64-bit      | aarch64-latest | 
+| ARMv7 32-bit      | armv7hf-latest | 
 
 # How to use this image
 
@@ -31,7 +31,7 @@ This container was designed to be started first to provide a connection to other
 ## Starting an NordVPN instance
 
     docker run -ti --cap-add=NET_ADMIN --device /dev/net/tun --name vpn \
-                -e USER=user@email.com -e PASS=password \
+                -e USER=user@email.com -e PASS='pas$word' \
                 -e COUNRTY=country -e CATEGORY=category \
                 -e PROTOCOL=protocol -d bubuntux/nordvpn
 
@@ -60,19 +60,18 @@ version: "3"
 services:
   vpn:
     image: bubuntux/nordvpn
-    container_name: nordvpn
     cap_add:
       - net_admin
     devices:
       - /dev/net/tun
     environment:
       - USER=user@email.com
-      - PASS=password
+      - PASS='pas$word'
       - COUNRTY=United_States
       - PROTOCOL=UDP
       - CATEGORY=P2P
       - NETWORK=192.168.1.0/24
-      - TZ=America/Mexico_City
+      - TZ=America/Denver
     ports:
       - 8080:80
     restart: unless-stopped
@@ -85,7 +84,7 @@ services:
 # ENVIRONMENT VARIABLES
 
  * `USER`     - User for NordVPN account.
- * `PASS`     - Password for NordVPN account.
+ * `PASS`     - Password for NordVPN account, surrounding the password in single quotes will prevent issues with special characters such as `$`.
  * `COUNTRY`  - Use servers from an specific country (IE United_States, Australia, NZ, Hong Kong, MX, [full list](https://nordvpn.com/servers/)).  
  * `CATEGORY` - Use servers from an specific category (IE Double_VPN, Standard VPN servers). Allowed categories are:
    * `Standard VPN servers` Get connected to ultra-fast VPN servers anywhere around the globe to change your IP address and protect your browsing activities.
@@ -102,6 +101,7 @@ services:
  * `GROUPID` - Set the GID for the vpn
 
 # Versions 
+ * **2019.02.28** - Add documentation on passwords with special characters, refactor to avoid issue [#20](https://github.com/bubuntux/nordvpn/issues/20) and override auth file when need it
  * **2019.02.27** - Use recommended service api, add multiple architectures.
 
 # Issues

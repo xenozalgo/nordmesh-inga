@@ -12,8 +12,5 @@ RUN apk --no-cache --no-progress upgrade && \
 
 VOLUME ["/vpn"]
 
-HEALTHCHECK --timeout=15s --interval=60s --start-period=120s \
-            CMD curl -fL "https://api.ipify.org" || exit 1
-
 COPY nordVpn.sh /usr/bin
 ENTRYPOINT ["/sbin/tini", "--", "/usr/bin/nordVpn.sh"]
