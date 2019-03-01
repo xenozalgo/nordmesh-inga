@@ -21,9 +21,11 @@ firewall() { # Everything has to go through the vpn
     ip6tables -A OUTPUT -d ${docker6_network} -j ACCEPT 2> /dev/null
     iptables  -A OUTPUT -p udp --dport 53 -j ACCEPT
     ip6tables -A OUTPUT -p udp --dport 53 -j ACCEPT 2> /dev/null
+    iptables  -A OUTPUT -p tcp -m owner --gid-owner vpn -j ACCEPT 2>/dev/null &&
     iptables  -A OUTPUT -p udp -m owner --gid-owner vpn -j ACCEPT || {
         iptables  -A OUTPUT -p tcp -m tcp --dport 1194 -j ACCEPT
         iptables  -A OUTPUT -p udp -m udp --dport 1194 -j ACCEPT; }
+    ip6tables -A OUTPUT -p tcp -m owner --gid-owner vpn -j ACCEPT 2>/dev/null &&
     ip6tables -A OUTPUT -p udp -m owner --gid-owner vpn -j ACCEPT 2>/dev/null || {
         ip6tables -A OUTPUT -p tcp -m tcp --dport 1194 -j ACCEPT 2>/dev/null
         ip6tables -A OUTPUT -p udp -m udp --dport 1194 -j ACCEPT 2>/dev/null; }
@@ -151,7 +153,10 @@ select_config_file() {
     config_file="${ovpn_dir}/$(ls ${ovpn_dir} | grep "${hostname}${post_fix}" | shuf | head -n 1)"
     if [[ ! -f ${config_file} ]]; then
         echo "Unable to find config file ${config_file}" > /dev/stderr
-        kill -s TERM ${TOP_PID} ; return
+        config_file="${ovpn_dir}/$(ls ${ovpn_dir} | shuf | head -n 1)"
+        if [[ ! -f ${config_file} ]]; then
+                kill -s TERM ${TOP_PID} ; return
+        fi
     fi
 
     echo "Using config file ${config_file}..." > /dev/stderr
@@ -197,7 +202,8 @@ else
     mkdir -p /dev/net
     [[ -c /dev/net/tun ]] || mknod -m 0666 /dev/net/tun c 10 200
 
-    echo "Connecting..."
+    echo "Connecting $([[ -n ${OPENVPN_OPTS} ]] && echo "( ${OPENVPN_OPTS} )")... "
     exec sg vpn -c "openvpn --config ${config_file} --auth-user-pass ${auth_file} --auth-nocache \
-                            --script-security 2 --up /etc/openvpn/up.sh --down /etc/openvpn/down.sh"
+                            --script-security 2 --up /etc/openvpn/up.sh --down /etc/openvpn/down.sh \
+                            ${OPENVPN_OPTS}"
 fi

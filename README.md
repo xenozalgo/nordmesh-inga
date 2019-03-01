@@ -71,6 +71,7 @@ services:
       - PROTOCOL=UDP
       - CATEGORY=P2P
       - NETWORK=192.168.1.0/24
+      - OPENVPN_OPTS='--pull-filter ignore "ping-restart" --ping-exit 180'
       - TZ=America/Denver
     ports:
       - 8080:80
@@ -80,6 +81,11 @@ services:
     image: nginx
     network_mode: service:vpn
 ```
+
+## Reconnect
+The container is as simple as it can be, in order to reconnect automatically when connection is lost add:
+ - Env variable: OPENVPN_OPTS='--pull-filter ignore "ping-restart" --ping-exit 180'
+ - Restart policy: unless-stopped or always 
 
 # ENVIRONMENT VARIABLES
 
@@ -97,11 +103,16 @@ services:
    * `TCP`
  * `NETWORK`  - CIDR networks (IE 192.168.1.0/24), add a route to allows replies once the VPN is up.
  * `NETWORK6` - CIDR IPv6 networks (IE fe00:d34d:b33f::/64), add a route to allows replies once the VPN is up.
+ * `OPENVPN_OPTS` - Used to pass extra parameters when connecting using openvpn.
  * `TZ` - Set a timezone (IE EST5EDT, America/Denver, [full list](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones))
  * `GROUPID` - Set the GID for the vpn
 
 # Versions 
- * **2019.03.01** - Add documentation on passwords with special characters, refactor to avoid issue [#20](https://github.com/bubuntux/nordvpn/issues/20) and override auth file when need it
+ * **2019.03.01** 
+    - Add documentation on passwords with special characters, refactor to avoid issue [#20](https://github.com/bubuntux/nordvpn/issues/20) and override auth file when need it.
+    - Fix issues with TCP protocol.
+    - Fallback to a random config file.
+    - Add OPENVPN_OPTS environment variable
  * **2019.02.27** - Use recommended service api, add multiple architectures.
 
 # Issues

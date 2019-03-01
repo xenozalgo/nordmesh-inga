@@ -11,6 +11,5 @@ RUN apk --no-cache --no-progress upgrade && \
 #CROSSRUN [ "cross-build-end" ]
 
 VOLUME ["/vpn"]
-
-COPY nordVpn.sh /usr/bin
 ENTRYPOINT ["/sbin/tini", "--", "/usr/bin/nordVpn.sh"]
+COPY nordVpn.sh /usr/bin
