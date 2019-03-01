@@ -10,6 +10,9 @@ RUN apk --no-cache --no-progress upgrade && \
     rm -rf /tmp/*
 #CROSSRUN [ "cross-build-end" ]
 
+HEALTHCHECK --interval=60s --timeout=15s --start-period=120s \
+             CMD curl -L 'https://api.ipify.org'
+
 VOLUME ["/vpn"]
 ENTRYPOINT ["/sbin/tini", "--", "/usr/bin/nordVpn.sh"]
 COPY nordVpn.sh /usr/bin
