@@ -71,7 +71,7 @@ services:
       - PROTOCOL=UDP
       - CATEGORY=P2P
       - NETWORK=192.168.1.0/24
-      - OPENVPN_OPTS='--pull-filter ignore "ping-restart" --ping-exit 180'
+      - OPENVPN_OPTS=--pull-filter ignore "ping-restart" --ping-exit 180
       - TZ=America/Denver
     ports:
       - 8080:80
@@ -108,6 +108,9 @@ The container is as simple as it can be, in order to reconnect automatically whe
  * `GROUPID` - Set the GID for the vpn
 
 # Versions 
+ * **2019.03.03**
+    - Fix docker-compose documentation [#21](https://github.com/bubuntux/nordvpn/issues/21).
+    - Use UTC timezone for tags.
  * **2019.03.01** 
     - Add documentation on passwords with special characters, refactor to avoid issue [#20](https://github.com/bubuntux/nordvpn/issues/20) and override auth file when need it.
     - Fix issues with TCP protocol.
