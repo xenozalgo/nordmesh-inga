@@ -1,11 +1,13 @@
 #!/bin/bash
-if [[ ! -f "/tmp/${SOURCE_COMMIT}" ]]; then
-  ver=`TZ=UTC date -u +"%Y.%m.%d"`
-  if [[ "${GIT_BRANCH}" != "master" ]]; then
-    ver+="-${GIT_BRANCH}"
-  fi
-  echo ${ver} > "/tmp/${SOURCE_COMMIT}"
+export PATH=".:$PATH"
+
+export VERSION=`cat README.md | grep -i "# Versions" -A 1 | tail -n 1 | sed 's/^[* ]*//;s/[* ]*$//'`
+if [[ "${GIT_BRANCH}" != "master" ]]; then
+    export VERSION="${VERSION}-${GIT_BRANCH}"
 fi
+
+export X86="i386 amd64"
+export ARM="armv7hf aarch64" # armv5e armv6 not available in balenalib
 
 manifestArch() {
   local options
@@ -25,8 +27,3 @@ manifestArch() {
   esac
   echo ${options}
 }
-
-export VERSION=`cat "/tmp/${SOURCE_COMMIT}"`
-export X86="i386 amd64"
-export ARM="armv7hf aarch64" # armv5e armv6 not available in balenalib
-export PATH=".:$PATH"
