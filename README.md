@@ -45,7 +45,7 @@ The environment variable NETWORK must be your local network that you would conne
 
     docker run -ti --cap-add=NET_ADMIN --device /dev/net/tun --name vpn \
                 -p 8080:80 -e NETWORK=192.168.1.0/24 \ 
-                -e USER=user@email.com -e PASS=password -d bubuntux/nordvpn                
+                -e USER=user@email.com -e PASS='pas$word' -d bubuntux/nordvpn                
 
 Now just create the second container _without_ the `-p` parameter, only inlcude the `--net=container:vpn`, the port should be declare in the vpn container.
 
@@ -101,6 +101,7 @@ The container is as simple as it can be, in order to reconnect automatically whe
  * `PROTOCOL` - Specify OpenVPN protocol. Allowed protocols are:
    * `UDP`
    * `TCP`
+ * `WHITELIST` - List of domains that are gonna be accessible _outside_ vpn (IE rarbg.to,yts.am).
  * `NETWORK`  - CIDR networks (IE 192.168.1.0/24), add a route to allows replies once the VPN is up.
  * `NETWORK6` - CIDR IPv6 networks (IE fe00:d34d:b33f::/64), add a route to allows replies once the VPN is up.
  * `OPENVPN_OPTS` - Used to pass extra parameters to openvpn [full list](https://openvpn.net/community-resources/reference-manual-for-openvpn-2-4/).
@@ -108,6 +109,8 @@ The container is as simple as it can be, in order to reconnect automatically whe
  * `GROUPID` - Set the GID for the vpn
 
 # Versions 
+ * **2019.03.09**
+    - Add WHITELIST variable.
  * **2019.03.03**
     - Fix docker-compose documentation [#21](https://github.com/bubuntux/nordvpn/issues/21).
     - Use UTC timezone for tags.

@@ -32,6 +32,7 @@ firewall() { # Everything has to go through the vpn
 
     [[ -n ${NETWORK} ]]  && for net in ${NETWORK//[;,]/ };  do return_route ${net};  done
     [[ -n ${NETWORK6} ]] && for net in ${NETWORK6//[;,]/ }; do return_route6 ${net}; done
+    [[ -n ${WHITELIST} ]] && for domain in ${WHITELIST//[;,]/ }; do white_list ${domain}; done
 }
 
 return_route() { # Add a route back to your network, so that return traffic works
@@ -49,8 +50,8 @@ return_route6() { # Add a route back to your network, so that return traffic wor
 }
 
 white_list() { # Allow unsecured traffic for an specific domain
-    local domain=`echo $1 | awk -F/ '{print $3}'`
-    echo "White listing ${domain}..." > /dev/stderr
+    local domain=`echo $1 | sed 's/^.*:\/\///;s/\/.*$//'`
+    echo "Whitelisting ${domain}..." > /dev/stderr
     iptables  -A OUTPUT -o eth0 -d ${domain} -j ACCEPT
     ip6tables -A OUTPUT -o eth0 -d ${domain} -j ACCEPT 2> /dev/null
 }
@@ -77,11 +78,11 @@ download_ovpn() { # Download ovpn files into the specified directory
     echo ${ovpn_dir}
 }
 
-country_filter() { # curl -s "https://api.nordvpn.com/v1/servers/countries" | jq --raw-output '.[] | [.code, .name] | @tsv'
+country_filter() { # curl -s "https://api.nordvpn.com/v1/servers/countries" | jq -r '.[] | [.code, .name] | @tsv'
     local nordvpn_api=$1 country=(${COUNTRY//[;,]/ })
     if [[ ${#country[@]} -ge 1 ]]; then
         country=${country[0]//_/ }
-        local country_id=`curl -s "${nordvpn_api}/v1/servers/countries" | jq --raw-output ".[] |
+        local country_id=`curl -s "${nordvpn_api}/v1/servers/countries" | jq -r ".[] |
                           select( (.name|test(\"^${country}$\";\"i\")) or
                                   (.code|test(\"^${country}$\";\"i\")) ) |
                           .id" | head -n 1`
@@ -92,11 +93,11 @@ country_filter() { # curl -s "https://api.nordvpn.com/v1/servers/countries" | jq
     fi
 }
 
-group_filter() { # curl -s "https://api.nordvpn.com/v1/servers/groups" | jq --raw-output '.[] | [.identifier, .title] | @tsv'
+group_filter() { # curl -s "https://api.nordvpn.com/v1/servers/groups" | jq -r '.[] | [.identifier, .title] | @tsv'
     local nordvpn_api=$1 category=(${CATEGORY//[;,]/ })
     if [[ ${#category[@]} -ge 1 ]]; then
         category=${category[0]//_/ }
-        local identifier=`curl -s "${nordvpn_api}/v1/servers/groups" | jq --raw-output ".[] |
+        local identifier=`curl -s "${nordvpn_api}/v1/servers/groups" | jq -r ".[] |
                           select( .title | test(\"${category}\";\"i\") ) |
                           .identifier" | head -n 1`
         if [[ -n ${identifier} ]]; then
@@ -106,7 +107,7 @@ group_filter() { # curl -s "https://api.nordvpn.com/v1/servers/groups" | jq --ra
     fi
 }
 
-technology_filter() { # curl -s "https://api.nordvpn.com/v1/technologies" | jq --raw-output '.[] | [.identifier, .name ] | @tsv' | grep openvpn
+technology_filter() { # curl -s "https://api.nordvpn.com/v1/technologies" | jq -r '.[] | [.identifier, .name ] | @tsv' | grep openvpn
     local identifier
     if [[ ${PROTOCOL,,} =~ .*udp.* ]]; then
         identifier="openvpn_udp"
@@ -119,7 +120,7 @@ technology_filter() { # curl -s "https://api.nordvpn.com/v1/technologies" | jq -
     fi
 }
 
-select_hostname() { #TODO return multiples
+select_hostname() {
     local nordvpn_api="https://api.nordvpn.com" \
           filters hostname
 
@@ -129,10 +130,10 @@ select_hostname() { #TODO return multiples
     filters+="$(group_filter ${nordvpn_api})"
     filters+="$(technology_filter )"
 
-    hostname=`curl -s "${nordvpn_api}/v1/servers/recommendations?${filters}limit=1" | jq --raw-output ".[].hostname"`
+    hostname=`curl -s "${nordvpn_api}/v1/servers/recommendations?${filters}limit=1" | jq -r ".[].hostname"`
     if [[ -z ${hostname} ]]; then
         echo "Unable to find a server with the specified parameters, using any recommended server" > /dev/stderr
-        hostname=`curl -s "${nordvpn_api}/v1/servers/recommendations?limit=1" | jq --raw-output ".[].hostname"`
+        hostname=`curl -s "${nordvpn_api}/v1/servers/recommendations?limit=1" | jq -r ".[].hostname"`
     fi
 
     echo "Best server : ${hostname}" > /dev/stderr
