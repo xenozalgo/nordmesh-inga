@@ -1,8 +1,8 @@
 #!/bin/bash
 
 firewall() { # Everything has to go through the vpn
-    local docker_network="$(  ip -o addr show dev eth0 | awk '$3 == "inet"  {print $4}'      )" \
-          docker6_network="$( ip -o addr show dev eth0 | awk '$3 == "inet6" {print $4; exit}')"
+    local docker_network=` ip -o addr show dev ${NET_IFACE} | awk '$3 == "inet"  {print $4}'      ` \
+          docker6_network=`ip -o addr show dev ${NET_IFACE} | awk '$3 == "inet6" {print $4; exit}'`
 
     echo "Staring firewall..." > /dev/stderr
     iptables  -F OUTPUT
@@ -38,22 +38,22 @@ firewall() { # Everything has to go through the vpn
 return_route() { # Add a route back to your network, so that return traffic works
     local network="$1" gw="$(ip route | awk '/default/ {print $3}')"
     echo "Adding network route ${network}..." > /dev/stderr
-    ip route add to ${network} via ${gw} dev eth0
+    ip route add to ${network} via ${gw} dev ${NET_IFACE}
     iptables -A OUTPUT --destination ${network} -j ACCEPT
 }
 
 return_route6() { # Add a route back to your network, so that return traffic works
     local network="$1" gw="$(ip -6 route | awk '/default/ {print $3}')"
     echo "Adding network route ${network}..." > /dev/stderr
-    ip -6 route add to ${network} via ${gw} dev eth0
+    ip -6 route add to ${network} via ${gw} dev ${NET_IFACE}
     ip6tables -A OUTPUT --destination ${network} -j ACCEPT 2> /dev/null
 }
 
 white_list() { # Allow unsecured traffic for an specific domain
     local domain=`echo $1 | sed 's/^.*:\/\///;s/\/.*$//'`
     echo "Whitelisting ${domain}..." > /dev/stderr
-    iptables  -A OUTPUT -o eth0 -d ${domain} -j ACCEPT
-    ip6tables -A OUTPUT -o eth0 -d ${domain} -j ACCEPT 2> /dev/null
+    iptables  -A OUTPUT -o ${NET_IFACE} -d ${domain} -j ACCEPT
+    ip6tables -A OUTPUT -o ${NET_IFACE} -d ${domain} -j ACCEPT 2> /dev/null
 }
 
 download_ovpn() { # Download ovpn files into the specified directory

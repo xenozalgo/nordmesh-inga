@@ -105,12 +105,14 @@ The container is as simple as it can be, in order to reconnect automatically whe
  * `NETWORK`  - CIDR networks (IE 192.168.1.0/24), add a route to allows replies once the VPN is up.
  * `NETWORK6` - CIDR IPv6 networks (IE fe00:d34d:b33f::/64), add a route to allows replies once the VPN is up.
  * `OPENVPN_OPTS` - Used to pass extra parameters to openvpn [full list](https://openvpn.net/community-resources/reference-manual-for-openvpn-2-4/).
- * `TZ` - Set a timezone (IE EST5EDT, America/Denver, [full list](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones))
- * `GROUPID` - Set the GID for the vpn
+ * `TZ` - Set a timezone (IE EST5EDT, America/Denver, [full list](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)).
+ * `GROUPID` - Set the GID for the vpn.
+ * `NET_IFACE` - Network Interface to bind the vpn (Useful when combined with `--network host` to protect the entire host).
 
 # Versions 
  * **2019.03.09**
     - Add WHITELIST variable.
+    - Add NET_IFACE variable. 
  * **2019.03.03**
     - Fix docker-compose documentation [#21](https://github.com/bubuntux/nordvpn/issues/21).
     - Use UTC timezone for tags.
