@@ -110,6 +110,8 @@ The container is as simple as it can be, in order to reconnect automatically whe
  * `NET_IFACE` - Network Interface to bind the vpn (Useful when combined with `--network host` to protect the entire host).
 
 # Versions 
+ * **2019.03.12**
+    - Remove HEALTH_CHECK.
  * **2019.03.09**
     - Add WHITELIST variable.
     - Add NET_IFACE variable. 
