@@ -32,7 +32,7 @@ This container was designed to be started first to provide a connection to other
 
     docker run -ti --cap-add=NET_ADMIN --device /dev/net/tun --name vpn \
                 -e USER=user@email.com -e PASS='pas$word' \
-                -e COUNRTY=country -e CATEGORY=category \
+                -e COUNTRY=country -e CATEGORY=category \
                 -e PROTOCOL=protocol -d bubuntux/nordvpn
 
 Once it's up other containers can be started using it's network connection:
@@ -67,7 +67,7 @@ services:
     environment:
       - USER=user@email.com
       - PASS='pas$word'
-      - COUNRTY=United_States
+      - COUNTRY=United_States
       - PROTOCOL=UDP
       - CATEGORY=P2P
       - NETWORK=192.168.1.0/24
