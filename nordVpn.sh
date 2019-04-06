@@ -198,13 +198,18 @@ else
     firewall
 
     ovpn_dir=$(download_ovpn)
-    config_file=$(select_config_file ${ovpn_dir})
 
     mkdir -p /dev/net
     [[ -c /dev/net/tun ]] || mknod -m 0666 /dev/net/tun c 10 200
 
-    echo "Connecting $([[ -n ${OPENVPN_OPTS} ]] && echo "( ${OPENVPN_OPTS} )")... "
-    exec sg vpn -c "openvpn --config ${config_file} --auth-user-pass ${auth_file} --auth-nocache \
-                            --script-security 2 --up /etc/openvpn/up.sh --down /etc/openvpn/down.sh \
-                            ${OPENVPN_OPTS}"
+    while :; do
+        config_file=$(select_config_file ${ovpn_dir})
+        echo "Connecting ... "
+        set -x
+        exec sg vpn -c "openvpn --config ${config_file} --auth-user-pass ${auth_file} --auth-nocache \
+                                --script-security 2 --up /etc/openvpn/up.sh --down /etc/openvpn/down.sh \
+                                ${OPENVPN_OPTS}"
+        set +x
+        sleep 1
+    done
 fi
