@@ -206,7 +206,7 @@ else
         config_file=$(select_config_file ${ovpn_dir})
         echo "Connecting ... "
         set -x
-        exec sg vpn -c "openvpn --config ${config_file} --auth-user-pass ${auth_file} --auth-nocache \
+        sg vpn -c "openvpn --config ${config_file} --auth-user-pass ${auth_file} --auth-nocache \
                                 --script-security 2 --up /etc/openvpn/up.sh --down /etc/openvpn/down.sh \
                                 ${OPENVPN_OPTS}"
         set +x
