@@ -83,9 +83,8 @@ services:
 ```
 
 ## Reconnect
-The container is as simple as it can be, in order to reconnect automatically when connection is lost add:
- - Env variable: OPENVPN_OPTS='--pull-filter ignore "ping-restart" --ping-exit 180'
- - Restart policy: unless-stopped or always 
+By the fault the container will try to reconnect to the same server when disconnected, in order to reconnect to another recommended server automatically add env variable:
+ - OPENVPN_OPTS='--pull-filter ignore "ping-restart" --ping-exit 180' 
 
 # ENVIRONMENT VARIABLES
 
@@ -111,7 +110,7 @@ The container is as simple as it can be, in order to reconnect automatically whe
 
 # Versions 
  * **2019.04.06**
-    - Fix reconnect mechanism [#28](https://github.com/bubuntux/nordvpn/issues/28).
+    - Enhance reconnect mechanism [#28](https://github.com/bubuntux/nordvpn/issues/28).
  * **2019.03.12**
     - Remove HEALTH_CHECK.
  * **2019.03.09**
