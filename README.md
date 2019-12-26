@@ -83,6 +83,10 @@ services:
     network_mode: service:vpn
 ```
 
+
+## Killswitch
+All traffic going through the container is router to the vpn (unless whitelisted), If connection to the vpn drops your connection to the internet stays blocked until the VPN tunnel is restored. THIS IS THE DEFAULT BEHAVIOUR AND CAN NOT BE DISABLE.
+
 ## Reconnect
 By the fault the container will try to reconnect to the same server when disconnected, in order to reconnect to another recommended server automatically add env variable:
  - OPENVPN_OPTS='--pull-filter ignore "ping-restart" --ping-exit 180' 
