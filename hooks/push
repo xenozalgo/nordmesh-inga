@@ -32,10 +32,11 @@ for arch in ${X86} ${ARM} ; do
   echo "**** Pushing ${arch}-${VERSION} ****"
   docker push "${DOCKER_REPO}:${arch}-${VERSION}"
 done
+
 manifestPush ${VERSION}
 
-if [[ "${GIT_BRANCH}" == "master" ]]; then
-  push "latest"
-else
-  push "${GIT_BRANCH}"
-fi
+#if [[ "${GIT_BRANCH}" == "master" ]]; then
+#  push "latest"
+#else
+#  push "${GIT_BRANCH}"
+#fi

@@ -10,7 +10,7 @@
     <a href="https://cloud.docker.com/repository/docker/bubuntux/nordvpn/builds"><img src="https://badgen.net/github/status/bubuntux/nordvpn"/></a>
 </p>
 
-This is a NordVPN client docker container that use the recommended NordVPN servers. It makes routing containers' traffic through OpenVPN easy.
+NordVpn official client in a docker. It makes routing containers' traffic through NordVpn easy.
 
 # Supported Architectures
 
@@ -33,8 +33,7 @@ This container was designed to be started first to provide a connection to other
 
     docker run -ti --cap-add=NET_ADMIN --device /dev/net/tun --name vpn \
                 -e USER=user@email.com -e PASS='pas$word' \
-                -e COUNTRY=country -e CATEGORY=category \
-                -e PROTOCOL=protocol -d bubuntux/nordvpn
+                -e CONNECT=country -e TECHNOLOGY=NordLynx -d bubuntux/nordvpn
 
 Once it's up other containers can be started using it's network connection:
 
@@ -61,6 +60,7 @@ version: "3"
 services:
   vpn:
     image: bubuntux/nordvpn
+    network_mode: bridge
     cap_add:
       - net_admin
     devices:
@@ -68,11 +68,9 @@ services:
     environment:
       - USER=user@email.com
       - PASS='pas$word'
-      - COUNTRY=United_States
-      - PROTOCOL=UDP
-      - CATEGORY=P2P
+      - CONNECT=United_States
+      - TECHNOLOGY=NordLynx
       - NETWORK=192.168.1.0/24
-      - OPENVPN_OPTS=--pull-filter ignore "ping-restart" --ping-exit 180
       - TZ=America/Denver
     ports:
       - 8080:80
@@ -87,51 +85,31 @@ services:
 ## Killswitch
 All traffic going through the container is router to the vpn (unless whitelisted), If connection to the vpn drops your connection to the internet stays blocked until the VPN tunnel is restored. THIS IS THE DEFAULT BEHAVIOUR AND CAN NOT BE DISABLE.
 
-## Reconnect
-By the fault the container will try to reconnect to the same server when disconnected, in order to reconnect to another recommended server automatically add env variable:
- - OPENVPN_OPTS='--pull-filter ignore "ping-restart" --ping-exit 180' 
-
 # ENVIRONMENT VARIABLES
 
  * `USER`     - User for NordVPN account.
  * `PASS`     - Password for NordVPN account, surrounding the password in single quotes will prevent issues with special characters such as `$`.
- * `COUNTRY`  - Use servers from an specific country (IE United_States, Australia, NZ, Hong Kong, MX, [full list](https://nordvpn.com/servers/)).  
- * `CATEGORY` - Use servers from an specific category (IE Double_VPN, Standard VPN servers). Allowed categories are:
-   * `Standard VPN servers` Get connected to ultra-fast VPN servers anywhere around the globe to change your IP address and protect your browsing activities.
-   * `P2P` Choose from hundreds of servers optimized for P2P sharing. NordVPN has no bandwidth limits and doesn’t log any of your activity.
-   * `Dedicated IP servers` Order a dedicated IP address, which can only be used by you and will not be shared with any other NordVPN users.
-   * `Double VPN` Send your Internet traffic through two different VPN servers for double encryption. Recommended for the most security-focused.
-   * `Onion Over VPN` For maximum online security and privacy, combine the benefits of NordVPN with the anonymizing powers of the Onion Router.
- * `PROTOCOL` - Specify OpenVPN protocol. Allowed protocols are:
-   * `UDP`
-   * `TCP`
+ * `CONNECT`  -  [country]/[server]/[country_code]/[city]/[group] or [country] [city], if none provide you will connect to  the recommended server.
+   - Provide a [country] argument to connect to a specific country. For example: Australia
+   - Provide a [server] argument to connecto to a specific server. For example: jp35
+   - Provide a [country_code] argument to connect to a specific country. For example: us
+   - Provide a [city] argument to connect to a specific city. For example: 'Hungary Budapest'
+   - Provide a [group] argument to connect to a specific servers group. For example: Onion_Over_VPN
+   - --group value, -g value  Specify a server group to connect to. For example: 'us -g p2p'
+ * `TECHNOLOGY` - Specify Technology to use: 
+   * OpenVPN    - Traditional connection.
+   * NordLynx   - NordVpn wireguard implementation (3x-5x times faster).
+ * `PROTOCOL`   - TCP or UDP (only valid when using OpenVPN).
+ * `OBFUSCATE`  - Enable or Disable. When enabled, this feature allows to bypass network traffic sensors which aim to detect usage of the protocol and log, throttle or block it (only valid when using OpenVpn). 
+ * `CYBER_SEC`  - Enable or Disable. When enabled, the CyberSec feature will automatically block suspicious websites so that no malware or other cyber threats can infect your device. Additionally, no flashy ads will come into your sight. More information on how it works: https://nordvpn.com/features/cybersec/.
+ * `DNS` -   Can set up to 3 DNS servers. For example 1.1.1.1,8.8.8.8 or Disable, Setting DNS disables CyberSec.
  * `WHITELIST` - List of domains that are gonna be accessible _outside_ vpn (IE rarbg.to,yts.am).
  * `NETWORK`  - CIDR networks (IE 192.168.1.0/24), add a route to allows replies once the VPN is up.
  * `NETWORK6` - CIDR IPv6 networks (IE fe00:d34d:b33f::/64), add a route to allows replies once the VPN is up.
- * `OPENVPN_OPTS` - Used to pass extra parameters to openvpn [full list](https://openvpn.net/community-resources/reference-manual-for-openvpn-2-4/).
  * `TZ` - Set a timezone (IE EST5EDT, America/Denver, [full list](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)).
  * `GROUPID` - Set the GID for the vpn.
  * `NET_IFACE` - Network Interface to bind the vpn (Useful when combined with `--network host` to protect the entire host).
-
-# Versions 
- * **2019.04.06**
-    - Enhance reconnect mechanism [#28](https://github.com/bubuntux/nordvpn/issues/28).
- * **2019.03.12**
-    - Remove HEALTH_CHECK.
- * **2019.03.09**
-    - Add WHITELIST variable.
-    - Add NET_IFACE variable. 
- * **2019.03.03**
-    - Fix docker-compose documentation [#21](https://github.com/bubuntux/nordvpn/issues/21).
-    - Use UTC timezone for tags.
- * **2019.03.01** 
-    - Add documentation on passwords with special characters, refactor to avoid issue [#20](https://github.com/bubuntux/nordvpn/issues/20) and override auth file when need it.
-    - Fix issues with TCP protocol.
-    - Fallback to a random config file.
-    - Add OPENVPN_OPTS environment variable.
- * **2019.02.27** 
-    - Use recommended service api.
-    - Add multiple architectures.
+ * `DEBUG`    - Set to 'on' for troubleshooting (User and Pass would be log).
 
 # Issues
 
