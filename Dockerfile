@@ -10,7 +10,7 @@ COPY start_vpn.sh /usr/bin
 CMD /usr/bin/start_vpn.sh
 
 ARG NORDVPN_BIN_ARCH=amd64
-ARG NORDVPN_BIN_VERSION=3.6.0-5
+ARG NORDVPN_BIN_VERSION=3.6.1-1
 
 #CROSSRUN [ "cross-build-start" ]
 RUN addgroup --system vpn && \
