@@ -54,6 +54,7 @@ Now just create the second container _without_ the `-p` parameter, only inlcude 
 now the service provided by the second container would be available from the host machine (http://localhost:8080) or anywhere inside the local network (http://192.168.1.xxx:8080).
 
 ## docker-compose
+**make sure to add     network_mode: bridge**
 
 ```
 version: "3"
