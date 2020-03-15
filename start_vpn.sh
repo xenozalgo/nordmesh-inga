@@ -62,7 +62,7 @@ setup_nordvpn() {
 	[[ -n ${OBFUSCATE} ]] && nordvpn set obfuscate ${OBFUSCATE}
 	[[ -n ${CYBER_SEC} ]] && nordvpn set cybersec ${CYBER_SEC}
 	[[ -n ${DNS} ]] && nordvpn set dns ${DNS//[;,]/ }
-	[[ -n ${DOCKER_NET} ]]  && nordvpn whitelist add subnet $DOCKER_NET
+	# Comment to fix issues with 3.7 [[ -n ${DOCKER_NET} ]]  && nordvpn whitelist add subnet $DOCKER_NET
 	[[ -n ${NETWORK} ]]  && for net in ${NETWORK//[;,]/ };  do nordvpn whitelist add subnet ${net};  done
 	[[ -n ${DEBUG} ]] && nordvpn settings
 }
