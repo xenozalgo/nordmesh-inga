@@ -5,7 +5,6 @@
 
 NET_IFACE=${NET_IFACE:-"eth0"}
 DOCKER_NET=` ip -o addr show dev ${NET_IFACE} | awk '$3 == "inet"  {print $4}'      `
-DOCKER_6NET=`ip -o addr show dev ${NET_IFACE} | awk '$3 == "inet6" {print $4; exit}'`	
 
 kill_switch() {
 	iptables  -F OUTPUT
