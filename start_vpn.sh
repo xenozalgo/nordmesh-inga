@@ -15,9 +15,6 @@ kill_switch() {
 	iptables  -A OUTPUT -o lo -j ACCEPT
 	ip6tables -A OUTPUT -o lo -j ACCEPT 2> /dev/null
 
-	[[ -n ${DOCKER_NET} ]]  && iptables  -A OUTPUT -d ${DOCKER_NET} -j ACCEPT
-	[[ -n ${DOCKER_6NET} ]] && ip6tables -A OUTPUT -d ${DOCKER_6NET} -j ACCEPT 2> /dev/null
-	
 	iptables  -A OUTPUT -m owner --gid-owner vpn -j ACCEPT || {
 		iptables  -A OUTPUT -p udp -m udp --dport 53 -j ACCEPT
 		iptables  -A OUTPUT -p udp -m udp --dport 51820 -j ACCEPT
@@ -62,7 +59,7 @@ setup_nordvpn() {
 	[[ -n ${OBFUSCATE} ]] && nordvpn set obfuscate ${OBFUSCATE}
 	[[ -n ${CYBER_SEC} ]] && nordvpn set cybersec ${CYBER_SEC}
 	[[ -n ${DNS} ]] && nordvpn set dns ${DNS//[;,]/ }
-	# Comment to fix issues with 3.7 [[ -n ${DOCKER_NET} ]]  && nordvpn whitelist add subnet $DOCKER_NET
+	[[ -n ${DOCKER_NET} ]]  && nordvpn whitelist add subnet $DOCKER_NET
 	[[ -n ${NETWORK} ]]  && for net in ${NETWORK//[;,]/ };  do nordvpn whitelist add subnet ${net};  done
 	[[ -n ${DEBUG} ]] && nordvpn settings
 }
