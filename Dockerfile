@@ -17,8 +17,6 @@ RUN addgroup --system vpn && \
     apt-get update && apt-get upgrade && \
     curl "https://repo.nordvpn.com/deb/nordvpn/debian/pool/main/nordvpn_${NORDVPN_BIN_VERSION}_${NORDVPN_BIN_ARCH}.deb" -o /tmp/nordvpn.deb && \
     apt-get install /tmp/nordvpn.deb || echo "error on post-installation script expected" && \
-    update-alternatives --set iptables /usr/sbin/iptables-legacy && \
-    update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy && \
     apt-get clean && \
     rm -rf \
         /tmp/* \
