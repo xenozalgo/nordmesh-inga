@@ -60,7 +60,7 @@ setup_nordvpn() {
 	[[ -n ${DNS} ]] && nordvpn set dns ${DNS//[;,]/ }
 	[[ -n ${DOCKER_NET} ]]  && nordvpn whitelist add subnet $DOCKER_NET
 	[[ -n ${NETWORK} ]]  && for net in ${NETWORK//[;,]/ };  do nordvpn whitelist add subnet ${net};  done
-	[[ -n ${DEBUG} ]] && nordvpn settings
+	[[ -n ${DEBUG} ]] &&  nordvpn -version && nordvpn settings
 }
 
 create_tun_device() {
