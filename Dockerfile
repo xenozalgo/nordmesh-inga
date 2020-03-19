@@ -1,24 +1,25 @@
 ARG ARCH=amd64
-FROM balenalib/${ARCH}-debian
+FROM balenalib/${ARCH}-ubuntu
 
-LABEL maintainer="Julio Gutierrez <bubuntux@gmail.com>"
+LABEL maintainer="Julio Gutierrez"
 
-HEALTHCHECK --interval=60s --timeout=5s --start-period=120s \
-		CMD ping -c 1 -q google.com; if test "$?" != "0"; then nordvpn connect ${CONNECT} ; exit 1; fi
+HEALTHCHECK --interval=1m --timeout=5s --start-period=1m \
+  CMD if test $( curl -s https://api.nordvpn.com/vpn/check/full | jq -r '.["status"]' ) = "Protected" ; then exit 0; else exit 1; fi
 
 COPY start_vpn.sh /usr/bin
 CMD /usr/bin/start_vpn.sh
 
-ARG NORDVPN_BIN_ARCH=amd64
 ARG NORDVPN_BIN_VERSION=3.7.0-3
 
 #CROSSRUN [ "cross-build-start" ]
 RUN addgroup --system vpn && \
-    apt-get update && apt-get upgrade && \
-    curl "https://repo.nordvpn.com/deb/nordvpn/debian/pool/main/nordvpn_${NORDVPN_BIN_VERSION}_${NORDVPN_BIN_ARCH}.deb" -o /tmp/nordvpn.deb && \
-    apt-get install /tmp/nordvpn.deb || echo "error on post-installation script expected" && \
-    apt-get clean && \
+    apt-get update && apt-get upgrade -y && \
+    apt-get install -y wget dpkg curl gnupg2 jq && \
+    wget -nc https://repo.nordvpn.com/deb/nordvpn/debian/pool/main/nordvpn-release_1.0.0_all.deb && dpkg -i nordvpn-release_1.0.0_all.deb && \
+    apt-get update && apt-get install -yqq nordvpn=${NORDVPN_BIN_VERSION} || sed -i "s/init)/$(ps --no-headers -o comm 1))/" /var/lib/dpkg/info/nordvpn.postinst && \
+    apt-get install -yqq && apt-get clean && \
     rm -rf \
+        ./nordvpn* \
         /tmp/* \
         /var/lib/apt/lists/* \
         /var/tmp/*

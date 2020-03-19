@@ -37,4 +37,6 @@ manifestPush ${VERSION}
 
 if [[ "${GIT_BRANCH}" == "master" ]]; then
   push "latest"
+else
+  push "${GIT_BRANCH}"
 fi

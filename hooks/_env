@@ -2,9 +2,12 @@
 export PATH=".:$PATH"
 
 export VERSION=`cat Dockerfile  | grep NORDVPN_BIN_VERSION= | sed 's/^ARG NORDVPN_BIN_VERSION=//'`
+if [[ "${GIT_BRANCH}" != "master" ]]; then
+  export VERSION=`echo ${VERSION}-${GIT_BRANCH}`
+fi
 
-export X86="i386 amd64"
-export ARM="armv7hf aarch64" 
+export X86="amd64"
+export ARM="armv7hf" 
 
 manifestArch() {
   local options
@@ -21,15 +24,3 @@ manifestArch() {
   echo ${options}
 }
 
-nordVpnArch(){
-  case $1 in
-    i386)
-      echo "i386" ;;
-    amd64)
-      echo "amd64" ;;
-    armv7hf)
-      echo "armhf" ;;
-    aarch64)
-      echo "arm64" ;;
-  esac
-}

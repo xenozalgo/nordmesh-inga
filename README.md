@@ -19,8 +19,6 @@ This image use [docker manifest for multi-platform awareness](https://github.com
 | Architecture      | Tag | 
 | :----:            | :---: | 
 | Linux x86-64      | amd64-latest | 
-| Linux x86/i686    | i386-latest |
-| ARMv8 64-bit      | aarch64-latest | 
 | ARMv7 32-bit      | armv7hf-latest | 
 
 # How to use this image
@@ -109,9 +107,5 @@ All traffic going through the container is router to the vpn (unless whitelisted
  * `NETWORK6` - CIDR IPv6 networks (IE fe00:d34d:b33f::/64), add a route to allows replies once the VPN is up.
  * `TZ` - Set a timezone (IE EST5EDT, America/Denver, [full list](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)).
  * `GROUPID` - Set the GID for the vpn.
- * `NET_IFACE` - Network Interface to bind the vpn (Useful when combined with `--network host` to protect the entire host).
  * `DEBUG`    - Set to 'on' for troubleshooting (User and Pass would be log).
-
-# Issues
-
-If you have any problems with or questions about this image, please contact me through a [GitHub issue](https://github.com/bubuntux/nordvpn/issues).
+ 
