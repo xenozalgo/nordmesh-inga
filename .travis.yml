@@ -37,8 +37,7 @@ jobs:
         - cat <<< $(jq '.+{"experimental":"enabled"}' ~/.docker/config.json) > ~/.docker/config.json
         - | 
           push() {
-            docker pull $REPO:amd64-${1}
-            docker pull $REPO:armv7hf-${1}
+            docker pull $REPO:amd64-${1} & docker pull $REPO:armv7hf-${1}
             docker manifest create $REPO:${1} $REPO:amd64-${1} $REPO:armv7hf-${1}
             docker manifest annotate $REPO:${1} $REPO:amd64-${1} --os linux --arch amd64
             docker manifest annotate $REPO:${1} $REPO:armv7hf-${1} --os linux --arch arm --variant v7
