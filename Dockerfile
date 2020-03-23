@@ -1,7 +1,7 @@
 ARG ARCH=amd64
 FROM balenalib/${ARCH}-ubuntu
 
-ARG VERSION
+ARG NORDVPN_VERSION
 LABEL maintainer="Julio Gutierrez"
 
 HEALTHCHECK --interval=1m --timeout=5s --start-period=1m \
@@ -15,7 +15,7 @@ RUN addgroup --system vpn && \
     apt-get update && apt-get upgrade -y && \
     apt-get install -y wget dpkg curl gnupg2 jq && \
     wget -nc https://repo.nordvpn.com/deb/nordvpn/debian/pool/main/nordvpn-release_1.0.0_all.deb && dpkg -i nordvpn-release_1.0.0_all.deb && \
-    apt-get update && apt-get install -yqq nordvpn${VERSION:+=$VERSION} || sed -i "s/init)/$(ps --no-headers -o comm 1))/" /var/lib/dpkg/info/nordvpn.postinst && \
+    apt-get update && apt-get install -yqq nordvpn${NORDVPN_VERSION:+=$NORDVPN_VERSION} || sed -i "s/init)/$(ps --no-headers -o comm 1))/" /var/lib/dpkg/info/nordvpn.postinst && \
     apt-get install -yqq && apt-get clean && \
     rm -rf \
         ./nordvpn* \
