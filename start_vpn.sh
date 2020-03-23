@@ -14,16 +14,12 @@ kill_switch() {
 	iptables -P OUTPUT DROP
 	iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 	iptables -A INPUT -i lo -j ACCEPT
-	iptables -A INPUT -s ${docker_network} -j ACCEPT
 	iptables -A FORWARD -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 	iptables -A FORWARD -i lo -j ACCEPT
-	iptables -A FORWARD -d ${docker_network} -j ACCEPT
-	iptables -A FORWARD -s ${docker_network} -j ACCEPT
 	iptables -A OUTPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 	iptables -A OUTPUT -o lo -j ACCEPT
 	iptables -A OUTPUT -o tap+ -j ACCEPT
 	iptables -A OUTPUT -o tun+ -j ACCEPT
-	iptables -A OUTPUT -d ${docker_network} -j ACCEPT
 	iptables -A OUTPUT -m owner --gid-owner vpn -j ACCEPT || {
 		iptables  -A OUTPUT -p udp -m udp --dport 53 -j ACCEPT
 		iptables  -A OUTPUT -p udp -m udp --dport 51820 -j ACCEPT
@@ -33,7 +29,14 @@ kill_switch() {
 	}
 	iptables -t nat -A POSTROUTING -o tap+ -j MASQUERADE
 	iptables -t nat -A POSTROUTING -o tun+ -j MASQUERADE
+	if [[ -n ${docker_network} ]]; then
+		iptables -A INPUT -s ${docker_network} -j ACCEPT
+		iptables -A FORWARD -d ${docker_network} -j ACCEPT
+		iptables -A FORWARD -s ${docker_network} -j ACCEPT
+		iptables -A OUTPUT -d ${docker_network} -j ACCEPT
+	fi
 	[[ -n ${NETWORK} ]]  && for net in ${NETWORK//[;,]/ };  do return_route ${net};  done
+	[[ -n ${WHITELIST} ]] && for domain in ${WHITELIST//[;,]/ }; do white_list ${domain}; done
 
 	ip6tables -F 2>/dev/null
 	ip6tables -X 2>/dev/null
@@ -43,17 +46,13 @@ kill_switch() {
 	ip6tables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT 2>/dev/null
 	ip6tables -A INPUT -p icmp -j ACCEPT 2>/dev/null
 	ip6tables -A INPUT -i lo -j ACCEPT 2>/dev/null
-	ip6tables -A INPUT -s ${docker6_network} -j ACCEPT 2>/dev/null
 	ip6tables -A FORWARD -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT 2>/dev/null
 	ip6tables -A FORWARD -p icmp -j ACCEPT 2>/dev/null
 	ip6tables -A FORWARD -i lo -j ACCEPT 2>/dev/null
-	ip6tables -A FORWARD -d ${docker6_network} -j ACCEPT 2>/dev/null
-	ip6tables -A FORWARD -s ${docker6_network} -j ACCEPT 2>/dev/null
 	ip6tables -A OUTPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT 2>/dev/null
 	ip6tables -A OUTPUT -o lo -j ACCEPT 2>/dev/null
 	ip6tables -A OUTPUT -o tap+ -j ACCEPT 2>/dev/null
 	ip6tables -A OUTPUT -o tun+ -j ACCEPT 2>/dev/null
-	ip6tables -A OUTPUT -d ${docker6_network} -j ACCEPT 2>/dev/null
 	ip6tables -A OUTPUT -m owner --gid-owner vpn -j ACCEPT 2>/dev/null || {
 		ip6tables -A OUTPUT -p udp -m udp --dport 53 -j ACCEPT 2>/dev/null
 		ip6tables -A OUTPUT -p udp -m udp --dport 51820 -j ACCEPT 2>/dev/null
@@ -61,9 +60,13 @@ kill_switch() {
 		ip6tables -A OUTPUT -p udp -m udp --dport 1194 -j ACCEPT 2>/dev/null
 		ip6tables -A OUTPUT -o eth0 -d api.nordvpn.com -j ACCEPT 2>/dev/null
 	}
+	if [[ -n ${docker6_network} ]]; then
+		ip6tables -A INPUT -s ${docker6_network} -j ACCEPT 2>/dev/null
+		ip6tables -A FORWARD -d ${docker6_network} -j ACCEPT 2>/dev/null
+		ip6tables -A FORWARD -s ${docker6_network} -j ACCEPT 2>/dev/null
+		ip6tables -A OUTPUT -d ${docker6_network} -j ACCEPT 2>/dev/null
+	fi
 	[[ -n ${NETWORK6} ]] && for net in ${NETWORK6//[;,]/ }; do return_route6 ${net}; done
-	
-	[[ -n ${WHITELIST} ]] && for domain in ${WHITELIST//[;,]/ }; do white_list ${domain}; done
 }
 
 return_route() { # Add a route back to your network, so that return traffic works
