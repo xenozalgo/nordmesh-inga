@@ -117,7 +117,7 @@ sleep 0.5
 
 create_tun_device
 
-nordvpn login -u ${USER} -p ${PASS} || exit 1
+nordvpn login -u ${USER} -p ${PASS}
 setup_nordvpn
 nordvpn connect ${CONNECT} || exit 1
 
