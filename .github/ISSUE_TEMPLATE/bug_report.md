@@ -14,10 +14,17 @@ A clear and concise description of what the bug is.
 
 **To Reproduce using docker CLI**
 Full command needs to be provided (hide credentials)
-docker run ... bubuntux/nordvpn 
+`docker run ... bubuntux/nordvpn `
 
 **To Reproduce without docker CLI**
-If using docker-compose make sure to add `network_mode: bridge`
+docker-compose.yml if used  (hide credentials)
+```
+version: '3'
+services:
+  vpn:
+    image: bubuntux/nordvpn
+  ...
+```
 
 **Expected behavior**
 A clear and concise description of what you expected to happen and a simple way for someone else to test it.
@@ -26,4 +33,4 @@ A clear and concise description of what you expected to happen and a simple way 
 Add DEBUG=on and copy the logs here (make sure to remove you user and password from the logs as well).
 
 **Additional context**
-Distribution used, Versions, architecture and any other context about the problem here.
+Distribution used, versions, architecture and any other context about the problem here.
