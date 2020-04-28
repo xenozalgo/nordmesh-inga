@@ -23,7 +23,7 @@ before_script:
 stage: "Build"
 script:
   - docker build --build-arg ARCH=${ARCH} --build-arg NORDVPN_VERSION=${NORDVPN_VERSION} -t $REPO:${ARCH}-${VERSION} .
-  - docker push $REPO:${ARCH}-${VERSION}
+  - if [ "${BRANCH}" != "dev" ]; then docker push $REPO:${ARCH}-${VERSION} ; fi
   - docker tag $REPO:${ARCH}-${VERSION} $REPO:${ARCH}-${BRANCH}
   - docker push $REPO:${ARCH}-${BRANCH}
   
@@ -44,5 +44,5 @@ jobs:
             docker manifest annotate $REPO:${1} $REPO:armv7hf-${1} --os linux --arch arm --variant v7
             docker manifest push --purge $REPO:${1}
           }
-        - push ${VERSION}
+        - if [ "${BRANCH}" != "dev" ]; then push ${VERSION} ; fi
         - push ${BRANCH}
