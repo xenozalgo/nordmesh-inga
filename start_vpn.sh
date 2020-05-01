@@ -3,9 +3,10 @@
 [[ -n ${COUNTRY} && -z ${CONNECT} ]] && CONNECT=${COUNTRY}
 [[ "${GROUPID:-""}" =~ ^[0-9]+$ ]] && groupmod -g $GROUPID -o vpn
 
+DOCKER_NET="$(ip -o addr show dev eth0 | awk '$3 == "inet" {print $4}')" 
+
 kill_switch() {
-	local docker_network="$(ip -o addr show dev eth0 | awk '$3 == "inet" {print $4}')" \
-             docker6_network="$(ip -o addr show dev eth0 | awk '$3 == "inet6" {print $4; exit}')"	
+	local  docker6_network="$(ip -o addr show dev eth0 | awk '$3 == "inet6" {print $4; exit}')"	
 
 	iptables -F
 	iptables -X
@@ -30,11 +31,11 @@ kill_switch() {
 	}
 	iptables -t nat -A POSTROUTING -o tap+ -j MASQUERADE
 	iptables -t nat -A POSTROUTING -o tun+ -j MASQUERADE
-	if [[ -n ${docker_network} ]]; then
-		iptables -A INPUT -s ${docker_network} -j ACCEPT
-		iptables -A FORWARD -d ${docker_network} -j ACCEPT
-		iptables -A FORWARD -s ${docker_network} -j ACCEPT
-		iptables -A OUTPUT -d ${docker_network} -j ACCEPT
+	if [[ -n ${DOCKER_NET} ]]; then
+		iptables -A INPUT -s ${DOCKER_NET} -j ACCEPT
+		iptables -A FORWARD -d ${DOCKER_NET} -j ACCEPT
+		iptables -A FORWARD -s ${DOCKER_NET} -j ACCEPT
+		iptables -A OUTPUT -d ${DOCKER_NET} -j ACCEPT
 	fi
 	[[ -n ${NETWORK} ]]  && for net in ${NETWORK//[;,]/ };  do return_route ${net};  done
 	[[ -n ${WHITELIST} ]] && for domain in ${WHITELIST//[;,]/ }; do white_list ${domain}; done
@@ -106,6 +107,7 @@ setup_nordvpn() {
 	[[ -n ${OBFUSCATE} ]] && nordvpn set obfuscate ${OBFUSCATE}
 	[[ -n ${CYBER_SEC} ]] && nordvpn set cybersec ${CYBER_SEC}
 	[[ -n ${DNS} ]] && nordvpn set dns ${DNS//[;,]/ }
+	[[ -n ${DOCKER_NET} ]]  && nordvpn whitelist add subnet ${DOCKER_NET}
 	[[ -n ${NETWORK} ]]  && for net in ${NETWORK//[;,]/ };  do nordvpn whitelist add subnet ${net};  done
 	[[ -n ${DEBUG} ]] && nordvpn -version && nordvpn settings
 }
