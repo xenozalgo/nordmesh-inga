@@ -21,11 +21,12 @@ kill_switch() {
 	iptables -A OUTPUT -o tap+ -j ACCEPT
 	iptables -A OUTPUT -o tun+ -j ACCEPT
 	iptables -A OUTPUT -m owner --gid-owner vpn -j ACCEPT || {
-		iptables  -A OUTPUT -p udp -m udp --dport 53 -j ACCEPT
+		iptables  -A OUTPUT -p udp -m udp --dport 53    -j ACCEPT
 		iptables  -A OUTPUT -p udp -m udp --dport 51820 -j ACCEPT
-		iptables  -A OUTPUT -p tcp -m tcp --dport 1194 -j ACCEPT
-		iptables  -A OUTPUT -p udp -m udp --dport 1194 -j ACCEPT
-		iptables  -A OUTPUT -o eth0 -d api.nordvpn.com -j ACCEPT
+		iptables  -A OUTPUT -p tcp -m tcp --dport 1194  -j ACCEPT
+		iptables  -A OUTPUT -p udp -m udp --dport 1194  -j ACCEPT
+		iptables  -A OUTPUT -p tcp -m tcp --dport 443   -j ACCEPT
+		iptables  -A OUTPUT -o eth0 -d api.nordvpn.com  -j ACCEPT
 	}
 	iptables -t nat -A POSTROUTING -o tap+ -j MASQUERADE
 	iptables -t nat -A POSTROUTING -o tun+ -j MASQUERADE
@@ -54,11 +55,12 @@ kill_switch() {
 	ip6tables -A OUTPUT -o tap+ -j ACCEPT 2>/dev/null
 	ip6tables -A OUTPUT -o tun+ -j ACCEPT 2>/dev/null
 	ip6tables -A OUTPUT -m owner --gid-owner vpn -j ACCEPT 2>/dev/null || {
-		ip6tables -A OUTPUT -p udp -m udp --dport 53 -j ACCEPT 2>/dev/null
+		ip6tables -A OUTPUT -p udp -m udp --dport 53    -j ACCEPT 2>/dev/null
 		ip6tables -A OUTPUT -p udp -m udp --dport 51820 -j ACCEPT 2>/dev/null
-		ip6tables -A OUTPUT -p tcp -m tcp --dport 1194 -j ACCEPT 2>/dev/null
-		ip6tables -A OUTPUT -p udp -m udp --dport 1194 -j ACCEPT 2>/dev/null
-		ip6tables -A OUTPUT -o eth0 -d api.nordvpn.com -j ACCEPT 2>/dev/null
+		ip6tables -A OUTPUT -p tcp -m tcp --dport 1194  -j ACCEPT 2>/dev/null
+		ip6tables -A OUTPUT -p udp -m udp --dport 1194  -j ACCEPT 2>/dev/null
+		ip6tables -A OUTPUT -p tcp -m tcp --dport 443   -j ACCEPT 2>/dev/null
+		ip6tables -A OUTPUT -o eth0 -d api.nordvpn.com  -j ACCEPT 2>/dev/null
 	}
 	if [[ -n ${docker6_network} ]]; then
 		ip6tables -A INPUT -s ${docker6_network} -j ACCEPT 2>/dev/null
@@ -115,10 +117,12 @@ rm -f /run/nordvpnd.sock
 sg vpn -c nordvpnd & 
 sleep 0.5
 
+nordvpn login -u ${USER} -p ${PASS}
+
+setup_nordvpn
 create_tun_device
 
-nordvpn login -u ${USER} -p ${PASS}
-setup_nordvpn
 nordvpn connect ${CONNECT} || exit 1
+nordvpn status
 
 tail -f --pid=$(pidof nordvpnd) /var/log/nordvpn/daemon.log
