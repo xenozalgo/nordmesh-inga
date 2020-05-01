@@ -12,15 +12,6 @@
 
 NordVpn official client in a docker. It makes routing containers traffic through NordVpn easy.
 
-# Supported Architectures
-
-This image use [docker manifest for multi-platform awareness](https://github.com/docker/distribution/blob/master/docs/spec/manifest-v2-2.md#manifest-list), simply pulling `bubuntux/nordvpn` should retrieve the correct image for your arch, but you can also pull specific arch images via tags.
-
-| Architecture      | Tag | 
-| :----:            | :---: | 
-| Linux x86-64      | amd64-latest | 
-| ARMv7 32-bit      | armv7hf-latest | 
-
 # How to use this image
 
 This container was designed to be started first to provide a connection to other containers (using `--net=container:vpn`, see below *Starting an NordVPN client instance*).
@@ -54,22 +45,20 @@ Now just create the second container _without_ the `-p` parameter, only inlcude 
 now the service provided by the second container would be available from the host machine (http://localhost:8080) or anywhere inside the local network (http://192.168.1.xxx:8080).
 
 ## docker-compose
-**make sure to add     network_mode: bridge**
-
 ```
 version: "3"
 services:
   vpn:
     image: bubuntux/nordvpn
-    network_mode: bridge
+    network_mode: bridge        # Required 
     cap_add:
-      - NET_ADMIN
-      - SYS_MODULE # Required for TECHNOLOGY=NordLynx
+      - NET_ADMIN               # Required
+      - SYS_MODULE              # Required for TECHNOLOGY=NordLynx
     devices:
-      - /dev/net/tun
+      - /dev/net/tun            # Required
     environment:
-      - USER=user@email.com
-      - PASS='pas$word'
+      - USER=user@email.com     # Required
+      - PASS='pas$word'         # Required
       - CONNECT=United_States
       - TECHNOLOGY=NordLynx
       - NETWORK=192.168.1.0/24
@@ -92,11 +81,11 @@ All traffic going through the container is router to the vpn (unless whitelisted
  * `USER`     - User for NordVPN account.
  * `PASS`     - Password for NordVPN account, surrounding the password in single quotes will prevent issues with special characters such as `$`.
  * `CONNECT`  -  [country]/[server]/[country_code]/[city]/[group] or [country] [city], if none provide you will connect to  the recommended server.
-   - Provide a [country] argument to connect to a specific country. For example: Australia
-   - Provide a [server] argument to connecto to a specific server. For example: jp35
-   - Provide a [country_code] argument to connect to a specific country. For example: us
-   - Provide a [city] argument to connect to a specific city. For example: 'Hungary Budapest'
-   - Provide a [group] argument to connect to a specific servers group. For example: Onion_Over_VPN
+   - Provide a [country] argument to connect to a specific country. For example: Australia , Use `docker run --rm bubuntux/nordvpn sh -c "nordvpnd & sleep 1 && nordvpn countries"` to get the list of countries.
+   - Provide a [server] argument to connecto to a specific server. For example: jp35 , [Full List](https://nordvpn.com/servers/tools/)
+   - Provide a [country_code] argument to connect to a specific country. For example: us 
+   - Provide a [city] argument to connect to a specific city. For example: 'Hungary Budapest' , Use `docker run --rm bubuntux/nordvpn sh -c "nordvpnd & sleep 1 && nordvpn cities [country]"` to get the list of cities. 
+   - Provide a [group] argument to connect to a specific servers group. For example: P2P , Use `docker run --rm bubuntux/nordvpn sh -c "nordvpnd & sleep 1 && nordvpn groups"` to get the full list.
    - --group value, -g value  Specify a server group to connect to. For example: 'us -g p2p'
  * `TECHNOLOGY` - Specify Technology to use: 
    * OpenVPN    - Traditional connection.
@@ -111,6 +100,15 @@ All traffic going through the container is router to the vpn (unless whitelisted
  * `TZ` - Set a timezone (IE EST5EDT, America/Denver, [full list](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)).
  * `GROUPID` - Set the GID for the vpn.
  * `DEBUG`    - Set to 'on' for troubleshooting (User and Pass would be log).
+
+# Supported Architectures
+
+This image use [docker manifest for multi-platform awareness](https://github.com/docker/distribution/blob/master/docs/spec/manifest-v2-2.md#manifest-list), simply pulling `bubuntux/nordvpn` should retrieve the correct image for your arch, but you can also pull specific arch images via tags.
+
+| Architecture      | Tag | 
+| :----:            | :---: | 
+| Linux x86-64      | amd64-latest | 
+| ARMv7 32-bit      | armv7hf-latest | 
 
 # Issues
 
