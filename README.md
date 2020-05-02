@@ -24,13 +24,36 @@ This container was designed to be started first to provide a connection to other
                 -e USER=user@email.com -e PASS='pas$word' \
                 -e CONNECT=country -e TECHNOLOGY=NordLynx -d bubuntux/nordvpn
 
-**NOTE**: `--cap-add=SYS_MODULE` is only required when selecting `TECHNOLOGY=NordLynx`. `TECHNOLOGY=OpenVPN` only requires `--cap-add=NET_ADMIN`.
-
 Once it's up other containers can be started using it's network connection:
 
     docker run -it --net=container:vpn -d some/docker-container
 
 ## Local Network access to services connecting to the internet through the VPN.
+However to access them from your normal network (off the 'local' docker bridge), you'll also need to run a web proxy, like so:
+```
+sudo docker run -it --name web -p 80:80 -p 443:443 \
+            --link vpn:<service_name> -d dperson/nginx \
+            -w "http://<service_name>:<PORT>/<URI>;/<PATH>"
+```
+Which will start a Nginx web server on local ports 80 and 443, and proxy any requests under /<PATH> to the to http://<service_name>:<PORT>/<URI>. To use a concrete example:
+
+```
+sudo docker run -it --name bit --net=container:vpn -d dperson/transmission
+sudo docker run -it --name web -p 80:80 -p 443:443 --link vpn:bit \
+            -d dperson/nginx -w "http://bit:9091/transmission;/transmission"
+```
+
+For multiple services (non-existant 'foo' used as an example):
+
+```
+sudo docker run -it --name bit --net=container:vpn -d dperson/transmission
+sudo docker run -it --name foo --net=container:vpn -d dperson/foo
+sudo docker run -it --name web -p 80:80 -p 443:443 --link vpn:bit \
+            --link vpn:foo -d dperson/nginx \
+            -w "http://bit:9091/transmission;/transmission" \
+            -w "http://foo:8000/foo;/foo"
+```
+## Routing access without the web proxy.
 
 The environment variable NETWORK must be your local network that you would connect to the server running the docker containers on. Running the following on your docker host should give you the correct network: `ip route | awk '!/ (docker0|br-)/ && /src/ {print $1}'`
 
@@ -44,34 +67,76 @@ Now just create the second container _without_ the `-p` parameter, only inlcude 
 
 now the service provided by the second container would be available from the host machine (http://localhost:8080) or anywhere inside the local network (http://192.168.1.xxx:8080).
 
-## docker-compose
+## docker-compose example with web proxy
 ```
 version: "3"
 services:
   vpn:
     image: bubuntux/nordvpn
-    network_mode: bridge        # Required 
     cap_add:
       - NET_ADMIN               # Required
       - SYS_MODULE              # Required for TECHNOLOGY=NordLynx
     devices:
       - /dev/net/tun            # Required
-    environment:
+    environment:                # Review https://github.com/bubuntux/nordvpn#environment-variables
       - USER=user@email.com     # Required
       - PASS='pas$word'         # Required
       - CONNECT=United_States
       - TECHNOLOGY=NordLynx
-      - NETWORK=192.168.1.0/24
-      - TZ=America/Denver
-    ports:
-      - 8080:80
-    restart: unless-stopped
-  
-  web:
-    image: nginx
+
+  torrent:
+    image: linuxserver/qbittorrent
     network_mode: service:vpn
+    depends_on:
+      - vpn
+
+  web:
+    image: dperson/nginx        # https://github.com/dperson/nginx
+    links:                                                                                   
+      - vpn:torrent                                                                          
+    depends_on:                                                                              
+      - torrent                                                                              
+    tmpfs:                                                                                   
+      - /run                                                                                 
+      - /tmp                                                                                 
+      - /var/cache/nginx                                                                     
+    ports:                                                                                   
+      - 80:80                                                                                
+      - 443:443                                                                              
+    command: -w "http://torrent:8080/;/" 
+    
+# The torrent service would be available at http://localhost/ 
 ```
 
+## docker-compose example without web proxy
+```
+version: "3"
+services:
+  vpn:
+    image: bubuntux/nordvpn
+    network_mode: bridge        # Required
+    cap_add:
+      - NET_ADMIN               # Required
+      - SYS_MODULE              # Required for TECHNOLOGY=NordLynx
+    devices:
+      - /dev/net/tun            # Required
+    environment:                # Review https://github.com/bubuntux/nordvpn#environment-variables
+      - USER=user@email.com     # Required
+      - PASS='pas$word'         # Required
+      - CONNECT=United_States
+      - TECHNOLOGY=NordLynx
+      - NETWORK=192.168.1.0/24 
+    ports:
+      - 8080:8080
+    
+  torrent:
+    image: linuxserver/qbittorrent
+    network_mode: service:vpn
+    depends_on:
+      - vpn
+      
+# The torrent service would be available at https://localhost:8080/ or anywhere inside the local network http://192.168.1.xxx:8080
+ ```
 
 ## Killswitch
 All traffic going through the container is router to the vpn (unless whitelisted), If connection to the vpn drops your connection to the internet stays blocked until the VPN tunnel is restored. THIS IS THE DEFAULT BEHAVIOUR AND CAN NOT BE DISABLE.
