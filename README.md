@@ -173,9 +173,9 @@ This image use [docker manifest for multi-platform awareness](https://github.com
 | Architecture      | Tag | 
 | :----:            | :---: | 
 | Linux x86         | i386 |
-| Linux x86-64      | amd64-latest |
+| Linux x86-64      | amd64 |
 | ARMv5 32-bit	    | armv5e |
-| ARMv7 32-bit      | armv7hf-latest | 
+| ARMv7 32-bit      | armv7hf | 
 | ARMv8 64-bit	    | aarch64 |
 
 # Issues
