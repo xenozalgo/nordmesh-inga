@@ -172,7 +172,7 @@ This image use [docker manifest for multi-platform awareness](https://github.com
 
 | Architecture      | Tag | 
 | :----:            | :---: | 
-| Linux x86         | i386 |
+| x86/i686          | i386 |
 | Linux x86-64      | amd64 |
 | ARMv5 32-bit	    | armv5e |
 | ARMv7 32-bit      | armv7hf | 
