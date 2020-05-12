@@ -165,6 +165,7 @@ All traffic going through the container is router to the vpn (unless whitelisted
  * `TZ` - Set a timezone (IE EST5EDT, America/Denver, [full list](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)).
  * `GROUPID` - Set the GID for the vpn.
  * `DEBUG`    - Set to 'on' for troubleshooting (User and Pass would be log).
+ * `PORTS`  - Semicolon delimited list of ports to whitelist for both UDP and TCP. For example `- PORTS=9091;9095`
 
 # Supported Architectures
 
