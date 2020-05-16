@@ -83,8 +83,6 @@ services:
       - "PASS=pas$word"         # Required
       - CONNECT=United_States
       - TECHNOLOGY=NordLynx
-    stdin_open: true
-    tty: true
 
   torrent:
     image: linuxserver/qbittorrent
@@ -130,8 +128,6 @@ services:
       - NETWORK=192.168.1.0/24 
     ports:
       - 8080:8080
-    stdin_open: true
-    tty: true
 
   torrent:
     image: linuxserver/qbittorrent
