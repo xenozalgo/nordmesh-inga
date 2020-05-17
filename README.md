@@ -80,7 +80,7 @@ services:
       - /dev/net/tun            # Required
     environment:                # Review https://github.com/bubuntux/nordvpn#environment-variables
       - USER=user@email.com     # Required
-      - PASS='pas$word'         # Required
+      - "PASS=pas$word"         # Required
       - CONNECT=United_States
       - TECHNOLOGY=NordLynx
 
@@ -122,13 +122,13 @@ services:
       - /dev/net/tun            # Required
     environment:                # Review https://github.com/bubuntux/nordvpn#environment-variables
       - USER=user@email.com     # Required
-      - PASS='pas$word'         # Required
+      - "PASS=pas$word"         # Required
       - CONNECT=United_States
       - TECHNOLOGY=NordLynx
       - NETWORK=192.168.1.0/24 
     ports:
       - 8080:8080
-    
+
   torrent:
     image: linuxserver/qbittorrent
     network_mode: service:vpn
