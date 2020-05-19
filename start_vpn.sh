@@ -118,7 +118,10 @@ kill_switch
 pkill nordvpnd 
 rm -f /run/nordvpnd.sock
 sg vpn -c nordvpnd & 
-sleep 0.5
+
+while [ ! -S /run/nordvpnd.sock ]; do
+	sleep 1
+done
 
 nordvpn login -u ${USER} -p ${PASS}
 
