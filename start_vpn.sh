@@ -120,7 +120,7 @@ rm -f /run/nordvpnd.sock
 sg vpn -c nordvpnd & 
 
 while [ ! -S /run/nordvpnd.sock ]; do
-	sleep 1
+	sleep 0.25
 done
 
 nordvpn login -u ${USER} -p ${PASS}
