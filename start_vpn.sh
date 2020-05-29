@@ -123,7 +123,7 @@ while [ ! -S /run/nordvpnd.sock ]; do
 	sleep 0.25
 done
 
-nordvpn login -u ${USER} -p ${PASS}
+nordvpn login -u ${USER} -p "${PASS}"
 
 setup_nordvpn
 create_tun_device
