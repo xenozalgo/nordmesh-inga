@@ -21,6 +21,7 @@ This container was designed to be started first to provide a connection to other
 ## Starting an NordVPN instance
 
     docker run -ti --cap-add=NET_ADMIN --cap-add=SYS_MODULE --device /dev/net/tun --name vpn \
+                --sysctl net.ipv4.conf.all.rp_filter=2 \
                 -e USER=user@email.com -e PASS='pas$word' \
                 -e CONNECT=country -e TECHNOLOGY=NordLynx -d bubuntux/nordvpn
 
@@ -76,6 +77,8 @@ services:
     cap_add:
       - NET_ADMIN               # Required
       - SYS_MODULE              # Required for TECHNOLOGY=NordLynx
+    sysctls:
+      - net.ipv4.conf.all.rp_filter=2
     devices:
       - /dev/net/tun            # Required
     environment:                # Review https://github.com/bubuntux/nordvpn#environment-variables
@@ -118,6 +121,8 @@ services:
     cap_add:
       - NET_ADMIN               # Required
       - SYS_MODULE              # Required for TECHNOLOGY=NordLynx
+    sysctls:
+      - net.ipv4.conf.all.rp_filter=2
     devices:
       - /dev/net/tun            # Required
     environment:                # Review https://github.com/bubuntux/nordvpn#environment-variables
@@ -154,7 +159,7 @@ All traffic going through the container is router to the vpn (unless whitelisted
    - --group value, -g value  Specify a server group to connect to. For example: 'us -g p2p'
  * `TECHNOLOGY` - Specify Technology to use: 
    * OpenVPN    - Traditional connection.
-   * NordLynx   - NordVpn wireguard implementation (3x-5x times faster). NOTE: Requires `--cap-add=SYS_MODULE`
+   * NordLynx   - NordVpn wireguard implementation (3x-5x times faster). NOTE: Requires `--cap-add=SYS_MODULE` and `--sysctl net.ipv4.conf.all.rp_filter=2`
  * `PROTOCOL`   - TCP or UDP (only valid when using OpenVPN).
  * `OBFUSCATE`  - Enable or Disable. When enabled, this feature allows to bypass network traffic sensors which aim to detect usage of the protocol and log, throttle or block it (only valid when using OpenVpn). 
  * `CYBER_SEC`  - Enable or Disable. When enabled, the CyberSec feature will automatically block suspicious websites so that no malware or other cyber threats can infect your device. Additionally, no flashy ads will come into your sight. More information on how it works: https://nordvpn.com/features/cybersec/.
