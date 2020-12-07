@@ -144,7 +144,7 @@ services:
  ```
 
 ## Killswitch
-All traffic going through the container is router to the vpn (unless whitelisted), If connection to the vpn drops your connection to the internet stays blocked until the VPN tunnel is restored. THIS IS THE DEFAULT BEHAVIOUR AND CAN NOT BE DISABLE.
+All traffic going through the container is routed to the vpn (unless whitelisted), If connection to the vpn drops your connection to the internet stays blocked until the VPN tunnel is restored. THIS IS THE DEFAULT BEHAVIOUR AND CAN NOT BE DISABLE.
 
 # ENVIRONMENT VARIABLES
 
