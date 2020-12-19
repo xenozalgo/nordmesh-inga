@@ -172,18 +172,6 @@ All traffic going through the container is routed to the vpn (unless whitelisted
  * `DEBUG`    - Set to 'on' for troubleshooting (User and Pass would be log).
  * `PORTS`  - Semicolon delimited list of ports to whitelist for both UDP and TCP. For example `- PORTS=9091;9095`
 
-# Supported Architectures
-
-This image use [docker manifest for multi-platform awareness](https://github.com/docker/distribution/blob/master/docs/spec/manifest-v2-2.md#manifest-list), simply pulling `bubuntux/nordvpn` should retrieve the correct image for your arch, but you can also pull specific arch images via tags.
-
-| Architecture      | Tag | 
-| :----:            | :---: | 
-| x86/i686          | i386 |
-| Linux x86-64      | amd64 |
-| ARMv5 32-bit	    | armv5e |
-| ARMv7 32-bit      | armv7hf | 
-| ARMv8 64-bit	    | aarch64 |
-
 # Issues
 
 If you have any problems with or questions about this image, please contact me through a [GitHub issue](https://github.com/bubuntux/nordvpn/issues).
