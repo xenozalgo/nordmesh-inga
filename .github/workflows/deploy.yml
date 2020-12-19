@@ -1,8 +1,7 @@
-name: release
+name: deploy
 on:
   push:
-    tags:
-      - '*'
+    
 jobs:
   release:
     runs-on: ubuntu-latest
@@ -10,9 +9,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Get tag
-        id: tag
-        uses: dawidd6/action-get-tag@v1
+      - name: Get branch name
+        id: git
+        run: |
+          NAME=$(echo ${GITHUB_REF} | sed -e "s/.*\///g")
+          TAG=false
+          if [[ ${GITHUB_REF} == "/refs/tags/"* ]]; then
+            TAG=true
+          fi
+          echo "::set-output name=name::${NAME}"
+          echo "::set-output name=tag::${TAG}"
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
@@ -37,17 +43,27 @@ jobs:
 
       - name: Build and push
         uses: docker/build-push-action@v2
+        if: steps.git.outputs.tag == 'true'
         with:
           platforms: linux/amd64,linux/arm64,linux/arm/v7,linux/386
           push: true
           tags: |
-            ${{ github.repository }}:${{ steps.tag.outputs.tag }}
+            ${{ github.repository }}:${{ steps.git.outputs.name }}
+            ghcr.io/${{ github.repository }}:${{ steps.git.outputs.name }}
+      
+      - name: Push latest
+        uses: docker/build-push-action@v2
+        if: steps.git.outputs.tag == 'true'
+        with:
+          platforms: linux/amd64,linux/arm64,linux/arm/v7,linux/386
+          push: true
+          tags: |
             ${{ github.repository }}:latest
-            ghcr.io/${{ github.repository }}:${{ steps.tag.outputs.tag }}
             ghcr.io/${{ github.repository }}:latest
 
       - name: Update repo description
         uses: peter-evans/dockerhub-description@v2
+        if: steps.git.outputs.tag == 'true'
         with:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
