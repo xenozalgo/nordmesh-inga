@@ -135,6 +135,10 @@ services:
       - CONNECT=United_States
       - TECHNOLOGY=NordLynx
       - NETWORK=192.168.1.0/24 
+    ulimits:                    # Recommended for High bandwidth scenarios
+      memlock:
+        soft: -1
+        hard: -1
     ports:
       - 8080:8080
 
