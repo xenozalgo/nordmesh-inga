@@ -86,6 +86,10 @@ services:
       - "PASS=pas$word"         # Required
       - CONNECT=United_States
       - TECHNOLOGY=NordLynx
+    ulimits:                    # Recommended for High bandwidth scenarios
+      memlock:
+        soft: -1
+        hard: -1
 
   torrent:
     image: linuxserver/qbittorrent
