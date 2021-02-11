@@ -17,7 +17,7 @@ jobs:
           if [[ ${GITHUB_REF} == "/refs/tags/"* ]]; then
             TAG=true
           fi
-          echo name=${NAME}  tag=${TAG}
+          echo name=${NAME}  tag=${TAG}  ref=${GITHUB_REF}
           echo "::set-output name=name::${NAME}"
           echo "::set-output name=tag::${TAG}"
 
