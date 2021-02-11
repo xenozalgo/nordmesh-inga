@@ -10,7 +10,7 @@
     <a href="https://github.com/bubuntux/nordvpn/actions?query=workflow%3Arelease"><img src="https://github.com/bubuntux/nordvpn/workflows/release/badge.svg"/></a>
 </p>
 
-NordVpn official client in a docker. It makes routing containers traffic through NordVpn easy.
+Official `NordVPN` client in a docker container; it makes routing traffic through the `NordVPN` network easy.
 
 # How to use this image
 

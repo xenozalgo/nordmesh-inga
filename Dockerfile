@@ -1,10 +1,10 @@
 FROM ubuntu:18.04
 
 LABEL maintainer="Julio Gutierrez"
-ARG NORDVPN_VERSION=3.7.4
+ARG NORDVPN_VERSION=3.8.10
 
 HEALTHCHECK --interval=5m --timeout=20s --start-period=1m \
-	CMD if test $( curl -m 10 -s https://api.nordvpn.com/vpn/check/full | jq -r '.["status"]' ) = "Protected" ; then exit 0; else nordvpn connect ${CONNECT} ; exit $?; fi
+	CMD if test $( curl -m 10 -s https://api.nordvpn.com/v1/helpers/ips/insights | jq -r '.["protected"]' ) = "true" ; then exit 0; else nordvpn disconnect; nordvpn connect ${CONNECT} ; exit $?; fi
 
 RUN addgroup --system vpn && \
 	apt-get update -yqq && \
