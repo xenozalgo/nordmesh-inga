@@ -14,7 +14,7 @@ jobs:
         run: |
           NAME=$(echo ${GITHUB_REF} | sed -e "s/.*\///g")
           TAG=false
-          if [[ ${GITHUB_REF} == "/refs/tags/"* ]]; then
+          if [[ ${GITHUB_REF} == *"/tags/"* ]]; then
             TAG=true
           fi
           echo name=${NAME}  tag=${TAG}  ref=${GITHUB_REF}
