@@ -6,7 +6,6 @@ DOCKER_NET="$(ip -o addr show dev eth0 | awk '$3 == "inet" {print $4}')"
 
 kill_switch() {
 	iptables -F
-	iptables -t nat -F
 	iptables -X
 	iptables -P INPUT DROP
 	iptables -P FORWARD DROP
@@ -38,7 +37,6 @@ kill_switch() {
 	fi
 	[[ -n ${NETWORK} ]]  && for net in ${NETWORK//[;,]/ };  do return_route "${net}";  done
 
-	ipttables -t nat -F 2>/dev/null
 	ip6tables -F 2>/dev/null
 	ip6tables -X 2>/dev/null
 	ip6tables -P INPUT DROP 2>/dev/null
