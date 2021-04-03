@@ -99,7 +99,6 @@ white_list() { # Allow unsecured traffic for an specific domain
 
 setup_nordvpn() {
   pkill nordvpnd
-  mkdir -p /run/nordvpn
   rm -f /run/nordvpn/nordvpnd.sock
   nordvpnd &
   while [ ! -S /run/nordvpn/nordvpnd.sock ]; do

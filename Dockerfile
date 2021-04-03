@@ -19,7 +19,8 @@ RUN apt-get update -yqq && \
 		/tmp/* \
 		/var/cache/apt/archives/* \
 		/var/lib/apt/lists/* \
-		/var/tmp/*
+		/var/tmp/* && \
+	mkdir -p /run/nordvpn
 
 CMD /usr/bin/start_vpn.sh
 COPY start_vpn.sh /usr/bin
