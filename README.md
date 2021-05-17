@@ -16,7 +16,7 @@ Official `NordVPN` client in a docker container; it makes routing traffic throug
 
 This container was designed to be started first to provide a connection to other containers (using `--net=container:vpn`, see below *Starting an NordVPN client instance*).
 
-**NOTE**: More than the basic privileges are needed for NordVPN. With docker 1.2 or newer you can use the `--cap-add=NET_ADMIN` and `--device /dev/net/tun` options. Earlier versions, or with fig, and you'll have to run it in privileged mode.
+**NOTE**: More than the basic privileges are needed for NordVPN. With docker 1.2 or newer you can use the `--cap-add=NET_ADMIN` option. Earlier versions, or with fig, and you'll have to run it in privileged mode.
 
 ## Starting an NordVPN instance
 
@@ -57,7 +57,7 @@ sudo docker run -it --name web -p 80:80 -p 443:443 --link vpn:bit \
 
 The environment variable NETWORK must be your local network that you would connect to the server running the docker containers on. Running the following on your docker host should give you the correct network: `ip route | awk '!/ (docker0|br-)/ && /src/ {print $1}'`
 
-    docker run -ti --cap-add=NET_ADMIN --device /dev/net/tun --name vpn \
+    docker run -ti --cap-add=NET_ADMIN --name vpn \
                 -p 8080:80 -e NETWORK=192.168.1.0/24 \ 
                 -e USER=user@email.com -e PASS='pas$word' -d ghcr.io/bubuntux/nordvpn               
 
@@ -75,8 +75,6 @@ services:
     image: ghcr.io/bubuntux/nordvpn
     cap_add:
       - NET_ADMIN               # Required
-    devices:
-      - /dev/net/tun            # Required
     environment:                # Review https://github.com/bubuntux/nordvpn#environment-variables
       - USER=user@email.com     # Required
       - "PASS=pas$word"         # Required
@@ -120,8 +118,6 @@ services:
     network_mode: bridge        # Required
     cap_add:
       - NET_ADMIN               # Required
-    devices:
-      - /dev/net/tun            # Required
     environment:                # Review https://github.com/bubuntux/nordvpn#environment-variables
       - USER=user@email.com     # Required
       - "PASS=pas$word"         # Required
