@@ -20,12 +20,11 @@ This container was designed to be started first to provide a connection to other
 
 ## Starting an NordVPN instance
 
-    docker run -ti --cap-add=NET_ADMIN --cap-add=SYS_MODULE --device /dev/net/tun --name vpn \
-                --sysctl net.ipv4.conf.all.rp_filter=2 \
+    docker run -ti --cap-add=NET_ADMIN --name vpn \
                 -e USER=user@email.com -e PASS='pas$word' \
-                -e CONNECT=country -e TECHNOLOGY=NordLynx -d bubuntux/nordvpn
+                -e CONNECT=country -e TECHNOLOGY=NordLynx -d ghcr.io/bubuntux/nordvpn
 
-Once it's up other containers can be started using it's network connection:
+Once it's up other containers can be started using its network connection:
 
     docker run -it --net=container:vpn -d some/docker-container
 
@@ -60,11 +59,11 @@ The environment variable NETWORK must be your local network that you would conne
 
     docker run -ti --cap-add=NET_ADMIN --device /dev/net/tun --name vpn \
                 -p 8080:80 -e NETWORK=192.168.1.0/24 \ 
-                -e USER=user@email.com -e PASS='pas$word' -d bubuntux/nordvpn                
+                -e USER=user@email.com -e PASS='pas$word' -d ghcr.io/bubuntux/nordvpn               
 
 Now just create the second container _without_ the `-p` parameter, only inlcude the `--net=container:vpn`, the port should be declare in the vpn container.
 
-    docker run -ti --rm --net=container:vpn -d bubuntux/riot-web
+    docker run -ti --rm --net=container:vpn -d ghcr.io/bubuntux/element-web
 
 now the service provided by the second container would be available from the host machine (http://localhost:8080) or anywhere inside the local network (http://192.168.1.xxx:8080).
 
@@ -73,12 +72,9 @@ now the service provided by the second container would be available from the hos
 version: "3"
 services:
   vpn:
-    image: bubuntux/nordvpn
+    image: ghcr.io/bubuntux/nordvpn
     cap_add:
       - NET_ADMIN               # Required
-      - SYS_MODULE              # Required for TECHNOLOGY=NordLynx
-    sysctls:
-      - net.ipv4.conf.all.rp_filter=2
     devices:
       - /dev/net/tun            # Required
     environment:                # Review https://github.com/bubuntux/nordvpn#environment-variables
@@ -120,13 +116,10 @@ services:
 version: "3"
 services:
   vpn:
-    image: bubuntux/nordvpn
+    image: ghcr.io/bubuntux/nordvpn
     network_mode: bridge        # Required
     cap_add:
       - NET_ADMIN               # Required
-      - SYS_MODULE              # Required for TECHNOLOGY=NordLynx
-    sysctls:
-      - net.ipv4.conf.all.rp_filter=2
     devices:
       - /dev/net/tun            # Required
     environment:                # Review https://github.com/bubuntux/nordvpn#environment-variables
@@ -151,34 +144,32 @@ services:
 # The torrent service would be available at https://localhost:8080/ or anywhere inside the local network http://192.168.1.xxx:8080
  ```
 
-## Killswitch
-All traffic going through the container is routed to the vpn (unless whitelisted), If connection to the vpn drops your connection to the internet stays blocked until the VPN tunnel is restored. THIS IS THE DEFAULT BEHAVIOUR AND CAN NOT BE DISABLE.
-
 # ENVIRONMENT VARIABLES
 
- * `USER`     - User for NordVPN account.
- * `PASS`     - Password for NordVPN account, surrounding the password in single quotes will prevent issues with special characters such as `$`.
- * `CONNECT`  -  [country]/[server]/[country_code]/[city]/[group] or [country] [city], if none provide you will connect to  the recommended server.
-   - Provide a [country] argument to connect to a specific country. For example: Australia , Use `docker run --rm bubuntux/nordvpn sh -c "nordvpnd & sleep 1 && nordvpn countries"` to get the list of countries.
-   - Provide a [server] argument to connecto to a specific server. For example: jp35 , [Full List](https://nordvpn.com/servers/tools/)
+* `USER`     - User for NordVPN account.
+* `PASS`     - Password for NordVPN account, surrounding the password in single quotes will prevent issues with special characters such as `$`.
+* `CONNECT`  -  [country]/[server]/[country_code]/[city]/[group] or [country] [city], if none provide you will connect to  the recommended server.
+   - Provide a [country] argument to connect to a specific country. For example: Australia , Use `docker run --rm ghcr.io/bubuntux/nordvpn countries` to get the list of countries.
+   - Provide a [server] argument to connect to a specific server. For example: jp35 , [Full List](https://nordvpn.com/servers/tools/)
    - Provide a [country_code] argument to connect to a specific country. For example: us 
-   - Provide a [city] argument to connect to a specific city. For example: 'Hungary Budapest' , Use `docker run --rm bubuntux/nordvpn sh -c "nordvpnd & sleep 1 && nordvpn cities [country]"` to get the list of cities. 
-   - Provide a [group] argument to connect to a specific servers group. For example: P2P , Use `docker run --rm bubuntux/nordvpn sh -c "nordvpnd & sleep 1 && nordvpn groups"` to get the full list.
+   - Provide a [city] argument to connect to a specific city. For example: 'Hungary Budapest' , Use `docker run --rm ghcr.io/bubuntux/nordvpn cities [country]` to get the list of cities. 
+   - Provide a [group] argument to connect to a specific servers group. For example: P2P , Use `docker run --rm ghcr.io/bubuntux/nordvpn n_groups` to get the full list.
    - --group value, -g value  Specify a server group to connect to. For example: 'us -g p2p'
- * `TECHNOLOGY` - Specify Technology to use: 
+* `CYBER_SEC`  - Enable or Disable. When enabled, the CyberSec feature will automatically block suspicious websites so that no malware or other cyber threats can infect your device. Additionally, no flashy ads will come into your sight. More information on how it works: https://nordvpn.com/features/cybersec/.
+* `DNS` -   Can set up to 3 DNS servers. For example 1.1.1.1,8.8.8.8 or Disable, Setting DNS disables CyberSec.
+* `FIREWALL`  - Enable or Disable.
+* `KILLSWITCH`  - Enable or Disable. (Enabled by default using iptables) This security feature blocks your device from accessing the Internet while not connected to the VPN or in case connection with a VPN server is lost.
+* `OBFUSCATE`  - Enable or Disable. When enabled, this feature allows to bypass network traffic sensors which aim to detect usage of the protocol and log, throttle or block it (only valid when using OpenVpn).
+* `PROTOCOL`   - TCP or UDP (only valid when using OpenVPN).
+* `TECHNOLOGY` - Specify Technology to use: 
    * OpenVPN    - Traditional connection.
-   * NordLynx   - NordVpn wireguard implementation (3x-5x times faster). NOTE: Requires `--cap-add=SYS_MODULE` and `--sysctl net.ipv4.conf.all.rp_filter=2`
- * `PROTOCOL`   - TCP or UDP (only valid when using OpenVPN).
- * `OBFUSCATE`  - Enable or Disable. When enabled, this feature allows to bypass network traffic sensors which aim to detect usage of the protocol and log, throttle or block it (only valid when using OpenVpn). 
- * `CYBER_SEC`  - Enable or Disable. When enabled, the CyberSec feature will automatically block suspicious websites so that no malware or other cyber threats can infect your device. Additionally, no flashy ads will come into your sight. More information on how it works: https://nordvpn.com/features/cybersec/.
- * `DNS` -   Can set up to 3 DNS servers. For example 1.1.1.1,8.8.8.8 or Disable, Setting DNS disables CyberSec.
- * `WHITELIST` - List of domains that are gonna be accessible _outside_ vpn (IE rarbg.to,yts.am).
- * `NETWORK`  - CIDR networks (IE 192.168.1.0/24), add a route to allows replies once the VPN is up.
- * `NETWORK6` - CIDR IPv6 networks (IE fe00:d34d:b33f::/64), add a route to allows replies once the VPN is up.
- * `TZ` - Set a timezone (IE EST5EDT, America/Denver, [full list](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)).
- * `GROUPID` - Set the GID for the vpn.
- * `DEBUG`    - Set to 'on' for troubleshooting (User and Pass would be log).
- * `PORTS`  - Semicolon delimited list of ports to whitelist for both UDP and TCP. For example `- PORTS=9091;9095`
+   * NordLynx   - NordVpn wireguard implementation (3x-5x times faster).
+* `WHITELIST` - List of domains that are going to be accessible _outside_ vpn (IE rarbg.to,yts.mx).
+* `NETWORK`  - CIDR networks (IE 192.168.1.0/24), add a route to allows replies once the VPN is up.
+* `NETWORK6` - CIDR IPv6 networks (IE fe00:d34d:b33f::/64), add a route to allows replies once the VPN is up.
+* `PORTS`  - Semicolon delimited list of ports to whitelist for both UDP and TCP. For example '- PORTS=9091;9095'
+* `PORT_RANGE`  - Port range to whitelist for both UDP and TCP. For example '- PORT_RANGE=9091 9095'
+* `DEBUG`    - Set to 'on' for troubleshooting (User and Pass would be logged).
 
 # Issues
 
