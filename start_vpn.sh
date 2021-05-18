@@ -99,16 +99,18 @@ if [[ -n ${WHITELIST} ]]; then
   for domain in ${WHITELIST//[;,]/ }; do
     domain=$(echo "$domain" | sed 's/^.*:\/\///;s/\/.*$//')
     sg nordvpn -c "iptables  -A OUTPUT -o eth0 -d ${domain} -j ACCEPT"
-	  sg nordvpn -c "ip6tables -A OUTPUT -o eth0 -d ${domain} -j ACCEPT 2>/dev/null"
+    sg nordvpn -c "ip6tables -A OUTPUT -o eth0 -d ${domain} -j ACCEPT 2>/dev/null"
   done
 fi
 
 mkdir -p /dev/net
 [[ -c /dev/net/tun ]] || mknod -m 0666 /dev/net/tun c 10 200
 
-service nordvpn restart
+service nordvpn stop
+rm -rf /run/nordvpn/nordvpnd.sock
+service nordvpn start
 
-printf "Waiting for the service to start"
+echo "Waiting for the service to start"
 attempt_counter=0
 max_attempts=50
 until [ -S /run/nordvpn/nordvpnd.sock ]; do
@@ -116,12 +118,12 @@ until [ -S /run/nordvpn/nordvpnd.sock ]; do
     echo "Max attempts reached"
     exit 1
   fi
-  printf '.'
+  echo -n '.'
   attempt_counter=$((attempt_counter + 1))
   sleep 0.1
 done
-echo ""
 
+nordvpn logout
 nordvpn login -u "${USER}" -p "${PASS}" || exit 1
 
 [[ -n ${CYBER_SEC} ]] && nordvpn set cybersec ${CYBER_SEC}
