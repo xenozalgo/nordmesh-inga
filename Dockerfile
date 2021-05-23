@@ -3,8 +3,11 @@ FROM ubuntu:18.04
 LABEL maintainer="Julio Gutierrez"
 ARG NORDVPN_VERSION=3.9.4-1
 
+HEALTHCHECK --interval=5m --timeout=20s --start-period=1m \
+	CMD if test $( curl -m 10 -s https://api.nordvpn.com/v1/helpers/ips/insights | jq -r '.["protected"]' ) = "true" ; then exit 0; else nordvpn disconnect; nordvpn connect ${CONNECT} ; exit $?; fi
+
 RUN apt-get update -y && \
-    apt-get install -y curl iputils-ping && \
+    apt-get install -y curl jq iputils-ping && \
     curl https://repo.nordvpn.com/deb/nordvpn/debian/pool/main/nordvpn-release_1.0.0_all.deb --output /tmp/nordrepo.deb && \
     apt-get install -y /tmp/nordrepo.deb && \
     apt-get update -y && \
