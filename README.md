@@ -1,5 +1,5 @@
 <p align="center">
-    <a href="https://nordvpn.com/"><img src="https://github.com/bubuntux/nordvpn/raw/master/NordVpn_logo.png"/></a>
+    <a href="https://nordvpn.com/"><img src="https://github.com/bubuntux/nordvpn/raw/master/.img/NordVpn_logo.png"/></a>
     </br>
     <a href="https://github.com/bubuntux/nordvpn/blob/master/LICENSE"><img src="https://badgen.net/github/license/bubuntux/nordvpn?color=cyan"/></a>
     <a href="https://cloud.docker.com/u/bubuntux/repository/docker/bubuntux/nordvpn"><img src="https://badgen.net/docker/size/bubuntux/nordvpn?icon=docker&label=size"/></a>
@@ -13,61 +13,20 @@
 Official `NordVPN` client in a docker container; it makes routing traffic through the `NordVPN` network easy.
 
 # How to use this image
-
 This container was designed to be started first to provide a connection to other containers (using `--net=container:vpn`, see below *Starting an NordVPN client instance*).
 
 **NOTE**: More than the basic privileges are needed for NordVPN. With docker 1.2 or newer you can use the `--cap-add=NET_ADMIN` option. Earlier versions, or with fig, and you'll have to run it in privileged mode.
 
 ## Starting an NordVPN instance
-
     docker run -ti --cap-add=NET_ADMIN --name vpn \
-                -e USER=user@email.com -e PASS='pas$word' \
-                -e CONNECT=country -e TECHNOLOGY=NordLynx -d ghcr.io/bubuntux/nordvpn
+               -e USER=user@email.com -e PASS='pas$word' \
+               -e TECHNOLOGY=NordLynx -d ghcr.io/bubuntux/nordvpn
 
 Once it's up other containers can be started using its network connection:
 
     docker run -it --net=container:vpn -d some/docker-container
 
-## Local Network access to services connecting to the internet through the VPN.
-However to access them from your normal network (off the 'local' docker bridge), you'll also need to run a web proxy, like so:
-```
-sudo docker run -it --name web -p 80:80 -p 443:443 \
-            --link vpn:<service_name> -d dperson/nginx \
-            -w "http://<service_name>:<PORT>/<URI>;/<PATH>"
-```
-Which will start a Nginx web server on local ports 80 and 443, and proxy any requests under /<PATH> to the to http://<service_name>:<PORT>/<URI>. To use a concrete example:
-
-```
-sudo docker run -it --name bit --net=container:vpn -d dperson/transmission
-sudo docker run -it --name web -p 80:80 -p 443:443 --link vpn:bit \
-            -d dperson/nginx -w "http://bit:9091/transmission;/transmission"
-```
-
-For multiple services (non-existant 'foo' used as an example):
-
-```
-sudo docker run -it --name bit --net=container:vpn -d dperson/transmission
-sudo docker run -it --name foo --net=container:vpn -d dperson/foo
-sudo docker run -it --name web -p 80:80 -p 443:443 --link vpn:bit \
-            --link vpn:foo -d dperson/nginx \
-            -w "http://bit:9091/transmission;/transmission" \
-            -w "http://foo:8000/foo;/foo"
-```
-## Routing access without the web proxy.
-
-The environment variable NETWORK must be your local network that you would connect to the server running the docker containers on. Running the following on your docker host should give you the correct network: `ip route | awk '!/ (docker0|br-)/ && /src/ {print $1}'`
-
-    docker run -ti --cap-add=NET_ADMIN --name vpn \
-                -p 8080:80 -e NETWORK=192.168.1.0/24 \ 
-                -e USER=user@email.com -e PASS='pas$word' -d ghcr.io/bubuntux/nordvpn               
-
-Now just create the second container _without_ the `-p` parameter, only inlcude the `--net=container:vpn`, the port should be declare in the vpn container.
-
-    docker run -ti --rm --net=container:vpn -d ghcr.io/bubuntux/element-web
-
-now the service provided by the second container would be available from the host machine (http://localhost:8080) or anywhere inside the local network (http://192.168.1.xxx:8080).
-
-## docker-compose example with web proxy
+## docker-compose example
 ```
 version: "3"
 services:
@@ -80,65 +39,145 @@ services:
       - "PASS=pas$word"         # Required
       - CONNECT=United_States
       - TECHNOLOGY=NordLynx
-    ulimits:                    # Recommended for High bandwidth scenarios
-      memlock:
-        soft: -1
-        hard: -1
-
-  torrent:
-    image: linuxserver/qbittorrent
-    network_mode: service:vpn
-    depends_on:
-      - vpn
-
-  web:
-    image: dperson/nginx        # https://github.com/dperson/nginx
-    links:                                                                                   
-      - vpn:torrent                                                                          
-    depends_on:                                                                              
-      - torrent                                                                              
-    tmpfs:                                                                                   
-      - /run                                                                                 
-      - /tmp                                                                                 
-      - /var/cache/nginx                                                                     
-    ports:                                                                                   
-      - 80:80                                                                                
-      - 443:443                                                                              
-    command: -w "http://torrent:8080/;/" 
-    
-# The torrent service would be available at http://localhost/ 
-```
-
-## docker-compose example without web proxy
-```
-version: "3"
-services:
-  vpn:
-    image: ghcr.io/bubuntux/nordvpn
-    network_mode: bridge        # Required
-    cap_add:
-      - NET_ADMIN               # Required
-    environment:                # Review https://github.com/bubuntux/nordvpn#environment-variables
-      - USER=user@email.com     # Required
-      - "PASS=pas$word"         # Required
-      - CONNECT=United_States
-      - TECHNOLOGY=NordLynx
-      - NETWORK=192.168.1.0/24 
+      - NETWORK=192.168.1.0/24  # So it can be accessed withinh the local network
     ulimits:                    # Recommended for High bandwidth scenarios
       memlock:
         soft: -1
         hard: -1
     ports:
       - 8080:8080
-
   torrent:
-    image: linuxserver/qbittorrent
+    image: ghcr.io/linuxserver/qbittorren
     network_mode: service:vpn
     depends_on:
       - vpn
       
 # The torrent service would be available at https://localhost:8080/ or anywhere inside the local network http://192.168.1.xxx:8080
  ```
+
+## docker-compose example using reverse proxy
+```
+version: "3"
+services:
+  proxy:
+    image: traefik:v2.4         # Review traefik documentation https://doc.traefik.io/traefik/ 
+    container_name: traefik
+    command:
+      - --api.insecure=true
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --entrypoints.web.address=:80
+    ports:
+      - 80:80
+      - 8080:8080
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    restart: unless-stopped
+  vpn:
+    image: ghcr.io/bubuntux/nordvpn
+    cap_add:
+      - NET_ADMIN               # Required
+    environment:                # Review https://github.com/bubuntux/nordvpn#environment-variables
+      - USER=user@email.com     # Required
+      - "PASS=pas$word"         # Required
+      - CONNECT=United_States
+      - TECHNOLOGY=NordLynx
+    ulimits:                    # Recommended for High bandwidth scenarios
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - 8080:8080
+  torrent:
+    image: ghcr.io/linuxserver/qbittorren
+    network_mode: service:vpn
+    labels:
+      - traefik.enable=true
+      - traefik.http.services.torrent.loadbalancer.server.port=8080
+      - traefik.http.routers.torrent.rule=Host(`custom-host`)
+    depends_on:
+      - vpn
+      
+# Make sure that custom-host resolves to the ip address of the server 
+# for example /etc/hosts contains 127.0.0.1  custom-host
+# the torrent service would be available at http://custom-host
+```
+
+## docker-compose example using reverse proxy with TLS
+```
+version: "3"
+services:
+  proxy:
+    image: traefik:v2.4             # Review traefik documentation https://doc.traefik.io/traefik/ 
+    container_name: traefik
+    command:
+      - --api.insecure=true
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --entrypoints.web.address=:80
+      - --entrypoints.web.http.redirections.entrypoint.to=websecure
+      - --entrypoints.websecure.address=:443
+      - --entrypoints.websecure.http.tls.certresolver=letsencrypt
+      - --certificatesresolvers.letsencrypt.acme.tlschallenge=true
+      - --certificatesresolvers.letsencrypt.acme.email=my@email.com
+      - --certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json
+    ports:
+      - 80:80
+      - 443:443
+      - 8080:8080
+    volumes:
+      - ./letsencrypt:/letsencrypt
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    restart: unless-stopped
+  domain:
+    image: ghcr.io/linuxserver/duckdns   # Review duckdns documentation https://github.com/linuxserver/docker-duckdns
+    container_name: duckdns
+    environment:
+      - TOKEN=ABCDFEG                    # Required
+      - SUBDOMAINS=domain1,domain2       # Required
+    restart: unless-stopped
+  media:
+    image: ghcr.io/linuxserver/plex
+    container_name: plex
+    labels:
+      - traefik.enable=true
+      - traefik.http.services.media.loadbalancer.server.port=32400
+      - traefik.http.routers.media.rule=Host(`myplex.duckdns.org`)   # Replace with your domain
+    devices:
+      - /dev/dri:/dev/dri
+    restart: unless-stopped
+  vpn:
+    image: ghcr.io/bubuntux/nordvpn
+    container_name: nordvpn
+    cap_add:
+      - NET_ADMIN               # Required
+    environment:                # Review https://github.com/bubuntux/nordvpn#environment-variables
+      - USER=user@email.com     # Required
+      - "PASS=pas$word"         # Required
+      - CONNECT=United_States
+      - TECHNOLOGY=NordLynx
+      - WHITELIST=showrss.info,rarbg.to,yts.mx
+    ulimits:                    # Recommended for High bandwidth scenarios
+      memlock:
+        soft: -1
+        hard: -1
+    restart: unless-stopped
+  torrent:
+    image: ghcr.io/linuxserver/qbittorrent
+    container_name: qbittorrent
+    network_mode: service:vpn
+    depends_on:
+      - vpn
+    labels:
+      - traefik.enable=true
+      - traefik.http.services.torrent.loadbalancer.server.port=8080
+      - traefik.http.routers.torrent.rule=Host(`mytorrent.duckdns.org`)  # Replace with your domain
+    restart: unless-stopped
+    
+# Make sure that you can access your server from the internet
+# for example configure dmz on your router
+# the torrent service would be available at https://mytorrent.duckdns.org
+```
 
 # ENVIRONMENT VARIABLES
 

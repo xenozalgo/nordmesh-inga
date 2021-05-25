@@ -1,6 +1,5 @@
 .git
 .github
+.img
+*.md
 LICENSE
-README.md
-SECURITY.md
-NordVpn_logo.png
