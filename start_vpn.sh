@@ -13,6 +13,9 @@ ip6tables -P INPUT DROP 2>/dev/null
 ip6tables -P FORWARD DROP 2>/dev/null
 ip6tables -P OUTPUT DROP 2>/dev/null
 
+echo "All connections dropped"
+echo "Enabling connection to secure interfaces"
+
 iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 iptables -A INPUT -i lo -j ACCEPT
 iptables -A FORWARD -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
@@ -41,7 +44,10 @@ ip6tables -t nat -A POSTROUTING -o tap+ -j MASQUERADE 2>/dev/null
 ip6tables -t nat -A POSTROUTING -o tun+ -j MASQUERADE 2>/dev/null
 ip6tables -t nat -A POSTROUTING -o nordlynx+ -j MASQUERADE 2>/dev/null
 
+echo "Enabling connection to nordvpn group"
+
 iptables -A OUTPUT -m owner --gid-owner nordvpn -j ACCEPT || {
+  echo "group match failed, fallback to open necessary ports"
   iptables -A OUTPUT -p udp -m udp --dport 53 -j ACCEPT
   iptables -A OUTPUT -p udp -m udp --dport 51820 -j ACCEPT
   iptables -A OUTPUT -p tcp -m tcp --dport 1194 -j ACCEPT
@@ -50,12 +56,15 @@ iptables -A OUTPUT -m owner --gid-owner nordvpn -j ACCEPT || {
 }
 
 ip6tables -A OUTPUT -m owner --gid-owner nordvpn -j ACCEPT 2>/dev/null || {
+  echo "ip6 group match failed, fallback to open necessary ports"
   ip6tables -A OUTPUT -p udp -m udp --dport 53 -j ACCEPT 2>/dev/null
   ip6tables -A OUTPUT -p udp -m udp --dport 51820 -j ACCEPT 2>/dev/null
   ip6tables -A OUTPUT -p tcp -m tcp --dport 1194 -j ACCEPT 2>/dev/null
   ip6tables -A OUTPUT -p udp -m udp --dport 1194 -j ACCEPT 2>/dev/null
   ip6tables -A OUTPUT -p tcp -m tcp --dport 443 -j ACCEPT 2>/dev/null
 }
+
+echo "Enabling connection to docker network"
 
 docker_network="$(ip -o addr show dev eth0 | awk '$3 == "inet" {print $4}')"
 if [[ -n ${docker_network} ]]; then
@@ -74,6 +83,7 @@ if [[ -n ${docker6_network} ]]; then
 fi
 
 if [[ -n ${NETWORK} ]]; then
+  echo "Enabling connection to custom networks"
   gw=$(ip route | awk '/default/ {print $3}')
   for net in ${NETWORK//[;,]/ }; do
     ip route | grep -q "$net" || ip route add to "$net" via "$gw" dev eth0
@@ -85,6 +95,7 @@ if [[ -n ${NETWORK} ]]; then
 fi
 
 if [[ -n ${NETWORK6} ]]; then
+  echo "Enabling connection to custom networks6"
   gw6=$(ip -6 route | awk '/default/{print $3}')
   for net6 in ${NETWORK6//[;,]/ }; do
     ip -6 route | grep -q "$net6" || ip -6 route add to "$net6" via "$gw6" dev eth0
@@ -96,6 +107,7 @@ if [[ -n ${NETWORK6} ]]; then
 fi
 
 if [[ -n ${WHITELIST} ]]; then
+  echo "Enabling connection to custom hosts"
   for domain in ${WHITELIST//[;,]/ }; do
     domain=$(echo "$domain" | sed 's/^.*:\/\///;s/\/.*$//')
     sg nordvpn -c "iptables  -A OUTPUT -o eth0 -d ${domain} -j ACCEPT"
@@ -154,4 +166,20 @@ cleanup() {
 }
 trap cleanup SIGTERM SIGINT EXIT # https://www.ctl.io/developers/blog/post/gracefully-stopping-docker-containers/
 
-tail -f --pid="$(cat /run/nordvpn/nordvpn.pid)" /var/log/nordvpn/daemon.log
+if [[ -n ${RECONNECT} ]]; then
+  tail -f --pid="$(cat /run/nordvpn/nordvpn.pid)" /var/log/nordvpn/daemon.log &
+  while true; do
+    sleep "${RECONNECT}"
+    if test "$(curl -m 20 -s https://api.nordvpn.com/v1/helpers/ips/insights | jq -r '.["protected"]')" = "false"; then
+      echo "Reconnecting..."
+      service nordvpn restart
+      nordvpn connect ${CONNECT} || {
+        cat /var/log/nordvpn/daemon.log
+        exit 1
+      }
+      tail -f --pid="$(cat /run/nordvpn/nordvpn.pid)" /var/log/nordvpn/daemon.log &
+    fi
+  done
+else
+  tail -f --pid="$(cat /run/nordvpn/nordvpn.pid)" /var/log/nordvpn/daemon.log
+fi
