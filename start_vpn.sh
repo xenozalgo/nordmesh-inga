@@ -170,7 +170,7 @@ if [[ -n ${RECONNECT} ]]; then
   tail -f --pid="$(cat /run/nordvpn/nordvpn.pid)" /var/log/nordvpn/daemon.log &
   while true; do
     sleep "${RECONNECT}"
-    if test "$(curl -m 20 -s https://api.nordvpn.com/v1/helpers/ips/insights | jq -r '.["protected"]')" = "false"; then
+    if [ "$(curl -m 20 -s https://api.nordvpn.com/v1/helpers/ips/insights | jq -r '.["protected"]')" != "true" ]; then
       echo "Reconnecting..."
       service nordvpn restart
       nordvpn connect ${CONNECT} || {
