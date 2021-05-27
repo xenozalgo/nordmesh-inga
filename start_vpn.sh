@@ -13,7 +13,7 @@ ip6tables -P INPUT DROP 2>/dev/null
 ip6tables -P FORWARD DROP 2>/dev/null
 ip6tables -P OUTPUT DROP 2>/dev/null
 
-echo "All connections dropped"
+echo "Firewall is up, everything has to go through the vpn"
 echo "Enabling connection to secure interfaces"
 
 iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
@@ -83,9 +83,9 @@ if [[ -n ${docker6_network} ]]; then
 fi
 
 if [[ -n ${NETWORK} ]]; then
-  echo "Enabling connection to custom networks"
   gw=$(ip route | awk '/default/ {print $3}')
   for net in ${NETWORK//[;,]/ }; do
+    echo "Enabling connection to network ${net}"
     ip route | grep -q "$net" || ip route add to "$net" via "$gw" dev eth0
     iptables -A INPUT -s "$net" -j ACCEPT
     iptables -A FORWARD -d "$net" -j ACCEPT
@@ -95,9 +95,9 @@ if [[ -n ${NETWORK} ]]; then
 fi
 
 if [[ -n ${NETWORK6} ]]; then
-  echo "Enabling connection to custom networks6"
   gw6=$(ip -6 route | awk '/default/{print $3}')
   for net6 in ${NETWORK6//[;,]/ }; do
+    echo "Enabling connection to network ${net6}"
     ip -6 route | grep -q "$net6" || ip -6 route add to "$net6" via "$gw6" dev eth0
     ip6tables -A INPUT -s "$net6" -j ACCEPT 2>/dev/null
     ip6tables -A FORWARD -d "$net6" -j ACCEPT 2>/dev/null
@@ -107,9 +107,9 @@ if [[ -n ${NETWORK6} ]]; then
 fi
 
 if [[ -n ${WHITELIST} ]]; then
-  echo "Enabling connection to custom hosts"
   for domain in ${WHITELIST//[;,]/ }; do
     domain=$(echo "$domain" | sed 's/^.*:\/\///;s/\/.*$//')
+    echo "Enabling connection to host ${domain}"
     sg nordvpn -c "iptables  -A OUTPUT -o eth0 -d ${domain} -j ACCEPT"
     sg nordvpn -c "ip6tables -A OUTPUT -o eth0 -d ${domain} -j ACCEPT 2>/dev/null"
   done
@@ -118,22 +118,26 @@ fi
 mkdir -p /dev/net
 [[ -c /dev/net/tun ]] || mknod -m 0666 /dev/net/tun c 10 200
 
-service nordvpn stop
-rm -rf /run/nordvpn/nordvpnd.sock
-service nordvpn start
+restart_daemon() {
+  echo "Restarting the service"
+  service nordvpn stop
+  rm -rf /run/nordvpn/nordvpnd.sock
+  service nordvpn start
 
-echo "Waiting for the service to start"
-attempt_counter=0
-max_attempts=50
-until [ -S /run/nordvpn/nordvpnd.sock ]; do
-  if [ ${attempt_counter} -eq ${max_attempts} ]; then
-    echo "Max attempts reached"
-    exit 1
-  fi
-  echo -n '.'
-  attempt_counter=$((attempt_counter + 1))
-  sleep 0.1
-done
+  echo "Waiting for the service to start"
+  attempt_counter=0
+  max_attempts=50
+  until [ -S /run/nordvpn/nordvpnd.sock ]; do
+    if [ ${attempt_counter} -eq ${max_attempts} ]; then
+      echo "Max attempts reached"
+      exit 1
+    fi
+    echo -n '.'
+    attempt_counter=$((attempt_counter + 1))
+    sleep 0.1
+  done
+}
+restart_daemon
 
 nordvpn logout
 nordvpn login -u "${USER}" -p "${PASS}" || exit 1
@@ -153,10 +157,14 @@ nordvpn login -u "${USER}" -p "${PASS}" || exit 1
 
 nordvpn -version
 nordvpn settings
-nordvpn connect ${CONNECT} || {
-  cat /var/log/nordvpn/daemon.log
-  exit 1
+
+connect() {
+  nordvpn connect ${CONNECT} || {
+    cat /var/log/nordvpn/daemon.log
+    exit 1
+  }
 }
+connect
 
 cleanup() {
   nordvpn disconnect
@@ -172,11 +180,8 @@ if [[ -n ${RECONNECT} ]]; then
     sleep "${RECONNECT}"
     if [ "$(curl -m 20 -s https://api.nordvpn.com/v1/helpers/ips/insights | jq -r '.["protected"]')" != "true" ]; then
       echo "Reconnecting..."
-      service nordvpn restart
-      nordvpn connect ${CONNECT} || {
-        cat /var/log/nordvpn/daemon.log
-        exit 1
-      }
+      restart_daemon
+      connect
       tail -f --pid="$(cat /run/nordvpn/nordvpn.pid)" /var/log/nordvpn/daemon.log &
     fi
   done
