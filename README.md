@@ -204,6 +204,7 @@ services:
 * `NETWORK6` - CIDR IPv6 networks (IE fe00:d34d:b33f::/64), add a route to allows replies once the VPN is up.
 * `PORTS`  - Semicolon delimited list of ports to whitelist for both UDP and TCP. For example '- PORTS=9091;9095'
 * `PORT_RANGE`  - Port range to whitelist for both UDP and TCP. For example '- PORT_RANGE=9091 9095'
+* `RECONNECT`  - Time in seconds to check connection and reconnect if need it. (300 by default) For example '- RECONNECT=600'
 * `DEBUG`    - Set to 'on' for troubleshooting (User and Pass would be logged).
 
 # Issues

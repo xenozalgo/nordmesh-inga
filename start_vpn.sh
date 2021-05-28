@@ -163,6 +163,7 @@ connect() {
     cat /var/log/nordvpn/daemon.log
     exit 1
   }
+  tail -f --pid="$(cat /run/nordvpn/nordvpn.pid)" /var/log/nordvpn/daemon.log &
 }
 connect
 
@@ -174,17 +175,11 @@ cleanup() {
 }
 trap cleanup SIGTERM SIGINT EXIT # https://www.ctl.io/developers/blog/post/gracefully-stopping-docker-containers/
 
-if [[ -n ${RECONNECT} ]]; then
-  tail -f --pid="$(cat /run/nordvpn/nordvpn.pid)" /var/log/nordvpn/daemon.log &
-  while true; do
-    sleep "${RECONNECT}"
-    if [ "$(curl -m 20 -s https://api.nordvpn.com/v1/helpers/ips/insights | jq -r '.["protected"]')" != "true" ]; then
-      echo "Reconnecting..."
-      restart_daemon
-      connect
-      tail -f --pid="$(cat /run/nordvpn/nordvpn.pid)" /var/log/nordvpn/daemon.log &
-    fi
-  done
-else
-  tail -f --pid="$(cat /run/nordvpn/nordvpn.pid)" /var/log/nordvpn/daemon.log
-fi
+while true; do
+  sleep "${RECONNECT:-300}"
+  if [ "$(curl -m 20 -s https://api.nordvpn.com/v1/helpers/ips/insights | jq -r '.["protected"]')" != "true" ]; then
+    echo "Reconnecting..."
+    restart_daemon
+    connect
+  fi
+done
