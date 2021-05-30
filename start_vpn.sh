@@ -159,10 +159,16 @@ nordvpn -version
 nordvpn settings
 
 connect() {
-  nordvpn connect ${CONNECT} || {
-    cat /var/log/nordvpn/daemon.log
-    exit 1
-  }
+  attempt_counter=0
+  max_attempts=15
+  until nordvpn connect ${CONNECT}; do
+    if [ ${attempt_counter} -eq ${max_attempts} ]; then
+      tail -n 200 /var/log/nordvpn/daemon.log
+      exit 1
+    fi
+    attempt_counter=$((attempt_counter + 1))
+    sleep 5
+  done
   tail -f --pid="$(cat /run/nordvpn/nordvpn.pid)" /var/log/nordvpn/daemon.log &
 }
 connect
@@ -177,7 +183,7 @@ trap cleanup SIGTERM SIGINT EXIT # https://www.ctl.io/developers/blog/post/grace
 
 while true; do
   sleep "${RECONNECT:-300}"
-  if [ "$(curl -m 20 -s https://api.nordvpn.com/v1/helpers/ips/insights | jq -r '.["protected"]')" != "true" ]; then
+  if [ "$(curl -m 30 -s https://api.nordvpn.com/v1/helpers/ips/insights | jq -r '.["protected"]')" != "true" ]; then
     echo "Reconnecting..."
     restart_daemon
     connect
