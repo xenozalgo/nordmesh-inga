@@ -1,6 +1,4 @@
 #!/bin/bash
-[[ -n ${DEBUG} ]] && set -x
-
 iptables -F
 iptables -X
 iptables -P INPUT DROP
@@ -13,8 +11,16 @@ ip6tables -P INPUT DROP 2>/dev/null
 ip6tables -P FORWARD DROP 2>/dev/null
 ip6tables -P OUTPUT DROP 2>/dev/null
 
-echo "Firewall is up, everything has to go through the vpn"
-echo "Enabling connection to secure interfaces"
+if [ "$(cat /etc/timezone)" != "${TZ}" ]; then
+  if [ -d "/usr/share/zoneinfo/${TZ}" ] || [ ! -e "/usr/share/zoneinfo/${TZ}" ] || [ -z "${TZ}" ]; then
+    TZ="Etc/UTC"
+  fi
+  ln -fs "/usr/share/zoneinfo/${TZ}" /etc/localtime
+  dpkg-reconfigure -f noninteractive tzdata 2> /dev/null
+fi
+
+echo "[$(date -Iseconds)] Firewall is up, everything has to go through the vpn"
+echo "[$(date -Iseconds)] Enabling connection to secure interfaces"
 
 iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 iptables -A INPUT -i lo -j ACCEPT
@@ -44,10 +50,10 @@ ip6tables -t nat -A POSTROUTING -o tap+ -j MASQUERADE 2>/dev/null
 ip6tables -t nat -A POSTROUTING -o tun+ -j MASQUERADE 2>/dev/null
 ip6tables -t nat -A POSTROUTING -o nordlynx+ -j MASQUERADE 2>/dev/null
 
-echo "Enabling connection to nordvpn group"
+echo "[$(date -Iseconds)] Enabling connection to nordvpn group"
 
 iptables -A OUTPUT -m owner --gid-owner nordvpn -j ACCEPT || {
-  echo "group match failed, fallback to open necessary ports"
+  echo "[$(date -Iseconds)] group match failed, fallback to open necessary ports"
   iptables -A OUTPUT -p udp -m udp --dport 53 -j ACCEPT
   iptables -A OUTPUT -p udp -m udp --dport 51820 -j ACCEPT
   iptables -A OUTPUT -p tcp -m tcp --dport 1194 -j ACCEPT
@@ -56,7 +62,7 @@ iptables -A OUTPUT -m owner --gid-owner nordvpn -j ACCEPT || {
 }
 
 ip6tables -A OUTPUT -m owner --gid-owner nordvpn -j ACCEPT 2>/dev/null || {
-  echo "ip6 group match failed, fallback to open necessary ports"
+  echo "[$(date -Iseconds)] ip6 group match failed, fallback to open necessary ports"
   ip6tables -A OUTPUT -p udp -m udp --dport 53 -j ACCEPT 2>/dev/null
   ip6tables -A OUTPUT -p udp -m udp --dport 51820 -j ACCEPT 2>/dev/null
   ip6tables -A OUTPUT -p tcp -m tcp --dport 1194 -j ACCEPT 2>/dev/null
@@ -64,7 +70,7 @@ ip6tables -A OUTPUT -m owner --gid-owner nordvpn -j ACCEPT 2>/dev/null || {
   ip6tables -A OUTPUT -p tcp -m tcp --dport 443 -j ACCEPT 2>/dev/null
 }
 
-echo "Enabling connection to docker network"
+echo "[$(date -Iseconds)] Enabling connection to docker network"
 
 docker_network="$(ip -o addr show dev eth0 | awk '$3 == "inet" {print $4}')"
 if [[ -n ${docker_network} ]]; then
@@ -85,7 +91,7 @@ fi
 if [[ -n ${NETWORK} ]]; then
   gw=$(ip route | awk '/default/ {print $3}')
   for net in ${NETWORK//[;,]/ }; do
-    echo "Enabling connection to network ${net}"
+    echo "[$(date -Iseconds)] Enabling connection to network ${net}"
     ip route | grep -q "$net" || ip route add to "$net" via "$gw" dev eth0
     iptables -A INPUT -s "$net" -j ACCEPT
     iptables -A FORWARD -d "$net" -j ACCEPT
@@ -97,7 +103,7 @@ fi
 if [[ -n ${NETWORK6} ]]; then
   gw6=$(ip -6 route | awk '/default/{print $3}')
   for net6 in ${NETWORK6//[;,]/ }; do
-    echo "Enabling connection to network ${net6}"
+    echo "[$(date -Iseconds)] Enabling connection to network ${net6}"
     ip -6 route | grep -q "$net6" || ip -6 route add to "$net6" via "$gw6" dev eth0
     ip6tables -A INPUT -s "$net6" -j ACCEPT 2>/dev/null
     ip6tables -A FORWARD -d "$net6" -j ACCEPT 2>/dev/null
@@ -109,7 +115,7 @@ fi
 if [[ -n ${WHITELIST} ]]; then
   for domain in ${WHITELIST//[;,]/ }; do
     domain=$(echo "$domain" | sed 's/^.*:\/\///;s/\/.*$//')
-    echo "Enabling connection to host ${domain}"
+    echo "[$(date -Iseconds)] Enabling connection to host ${domain}"
     sg nordvpn -c "iptables  -A OUTPUT -o eth0 -d ${domain} -j ACCEPT"
     sg nordvpn -c "ip6tables -A OUTPUT -o eth0 -d ${domain} -j ACCEPT 2>/dev/null"
   done
@@ -119,29 +125,33 @@ mkdir -p /dev/net
 [[ -c /dev/net/tun ]] || mknod -m 0666 /dev/net/tun c 10 200
 
 restart_daemon() {
-  echo "Restarting the service"
+  echo "[$(date -Iseconds)] Restarting the service"
   service nordvpn stop
   rm -rf /run/nordvpn/nordvpnd.sock
   service nordvpn start
 
-  echo "Waiting for the service to start"
+  echo "[$(date -Iseconds)] Waiting for the service to start"
   attempt_counter=0
   max_attempts=50
   until [ -S /run/nordvpn/nordvpnd.sock ]; do
     if [ ${attempt_counter} -eq ${max_attempts} ]; then
-      echo "Max attempts reached"
+      echo "[$(date -Iseconds)] Max attempts reached"
       exit 1
     fi
-    echo -n '.'
     attempt_counter=$((attempt_counter + 1))
     sleep 0.1
   done
 }
 restart_daemon
 
-nordvpn logout
-nordvpn login -u "${USER}" -p "${PASS}" || exit 1
+echo "[$(date -Iseconds)] Logging in"
+nordvpn logout > /dev/null
+nordvpn login -u "${USER}" -p "${PASS}" || {
+  echo "[$(date -Iseconds)] Invalid Username or password."
+  exit 1
+}
 
+echo "[$(date -Iseconds)] Setting up $(nordvpn -version)"
 [[ -n ${CYBER_SEC} ]] && nordvpn set cybersec ${CYBER_SEC}
 [[ -n ${DNS} ]] && nordvpn set dns ${DNS//[;,]/ }
 [[ -n ${FIREWALL} ]] && nordvpn set firewall ${FIREWALL}
@@ -154,22 +164,22 @@ nordvpn login -u "${USER}" -p "${PASS}" || exit 1
 [[ -n ${NETWORK} ]] && for net in ${NETWORK//[;,]/ }; do nordvpn whitelist add subnet "${net}"; done
 [[ -n ${PORTS} ]] && for port in ${PORTS//[;,]/ }; do nordvpn whitelist add port "${port}"; done
 [[ -n ${PORT_RANGE} ]] && nordvpn whitelist add ports ${PORT_RANGE}
-
-nordvpn -version
-nordvpn settings
+[[ -n ${DEBUG} ]] && nordvpn settings
 
 connect() {
+  echo "[$(date -Iseconds)] Connecting..."
   attempt_counter=0
   max_attempts=15
   until nordvpn connect ${CONNECT}; do
     if [ ${attempt_counter} -eq ${max_attempts} ]; then
       tail -n 200 /var/log/nordvpn/daemon.log
+      echo "[$(date -Iseconds)] Unable to connect."
       exit 1
     fi
     attempt_counter=$((attempt_counter + 1))
     sleep 5
   done
-  tail -f --pid="$(cat /run/nordvpn/nordvpn.pid)" /var/log/nordvpn/daemon.log &
+  [[ -n ${DEBUG} ]] && tail -n 1 -f --pid="$(cat /run/nordvpn/nordvpn.pid)" /var/log/nordvpn/daemon.log &
 }
 connect
 
@@ -184,7 +194,8 @@ trap cleanup SIGTERM SIGINT EXIT # https://www.ctl.io/developers/blog/post/grace
 while true; do
   sleep "${RECONNECT:-300}"
   if [ "$(curl -m 30 -s https://api.nordvpn.com/v1/helpers/ips/insights | jq -r '.["protected"]')" != "true" ]; then
-    echo "Reconnecting..."
+    echo "[$(date -Iseconds)] Unstable connection detected!"
+    nordvpn status
     restart_daemon
     connect
   fi
