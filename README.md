@@ -205,8 +205,8 @@ services:
 * `PORTS`  - Semicolon delimited list of ports to whitelist for both UDP and TCP. For example '- PORTS=9091;9095'
 * `PORT_RANGE`  - Port range to whitelist for both UDP and TCP. For example '- PORT_RANGE=9091 9095'
 * `RECONNECT`  - Time in seconds to check connection and reconnect if need it. (300 by default) For example '- RECONNECT=600'
-* `TZ`  - Specify a timezone to use. For example ` - TZ=Europe/London`
-* `DEBUG`    - Set to 'on' for troubleshooting (User and Pass would be logged).
+* `TZ`  - Specify a timezone to use. For example  '- TZ=Europe/London'
+* `DEBUG`    - Set to 'on' for troubleshooting (User and Pass maybe logged).
 
 # Issues
 
