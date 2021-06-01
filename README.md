@@ -40,10 +40,6 @@ services:
       - CONNECT=United_States
       - TECHNOLOGY=NordLynx
       - NETWORK=192.168.1.0/24  # So it can be accessed withinh the local network
-    ulimits:                    # Recommended for High bandwidth scenarios
-      memlock:
-        soft: -1
-        hard: -1
     ports:
       - 8080:8080
   torrent:
@@ -82,10 +78,6 @@ services:
       - "PASS=pas$word"         # Required
       - CONNECT=United_States
       - TECHNOLOGY=NordLynx
-    ulimits:                    # Recommended for High bandwidth scenarios
-      memlock:
-        soft: -1
-        hard: -1
     ports:
       - 8080:8080
   torrent:
@@ -157,11 +149,6 @@ services:
       - CONNECT=United_States
       - TECHNOLOGY=NordLynx
       - WHITELIST=showrss.info,rarbg.to,yts.mx
-    ulimits:                    # Recommended for High bandwidth scenarios
-      memlock:
-        soft: -1
-        hard: -1
-    restart: unless-stopped
   torrent:
     image: ghcr.io/linuxserver/qbittorrent
     container_name: qbittorrent
