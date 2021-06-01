@@ -110,7 +110,7 @@ services:
       - --entrypoints.websecure.address=:443
       - --entrypoints.websecure.http.tls.certresolver=letsencrypt
       - --certificatesresolvers.letsencrypt.acme.tlschallenge=true
-      - --certificatesresolvers.letsencrypt.acme.email=my@email.com
+      - --certificatesresolvers.letsencrypt.acme.email=my@email.com # Replace with your email
       - --certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json
     ports:
       - 80:80
@@ -121,7 +121,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     restart: unless-stopped
   domain:
-    image: ghcr.io/linuxserver/duckdns   # Review duckdns documentation https://github.com/linuxserver/docker-duckdns
+    image: ghcr.io/linuxserver/duckdns   # Review doc https://github.com/linuxserver/docker-duckdns
     container_name: duckdns
     environment:
       - TOKEN=ABCDFEG                    # Required
@@ -157,7 +157,7 @@ services:
     labels:
       - traefik.enable=true
       - traefik.http.services.torrent.loadbalancer.server.port=8080
-      - traefik.http.routers.torrent.rule=Host(`mytorrent.duckdns.org`)  # Replace with your domain
+      - traefik.http.routers.torrent.rule=Host(`mytorrent.duckdns.org`) # Replace with your domain
     restart: unless-stopped
     
 # Make sure that you can access your server from the internet
