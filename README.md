@@ -39,7 +39,7 @@ services:
       - "PASS=pas$word"         # Required
       - CONNECT=United_States
       - TECHNOLOGY=NordLynx
-      - NETWORK=192.168.1.0/24  # So it can be accessed withinh the local network
+      - NETWORK=192.168.1.0/24  # So it can be accessed within the local network
     ports:
       - 8080:8080
   torrent:
@@ -48,7 +48,8 @@ services:
     depends_on:
       - vpn
       
-# The torrent service would be available at https://localhost:8080/ or anywhere inside the local network http://192.168.1.xxx:8080
+# The torrent service would be available at http://localhost:8080/ 
+# or anywhere inside of the local network http://192.168.1.xxx:8080
  ```
 
 ## docker-compose example using reverse proxy
@@ -78,8 +79,6 @@ services:
       - "PASS=pas$word"         # Required
       - CONNECT=United_States
       - TECHNOLOGY=NordLynx
-    ports:
-      - 8080:8080
   torrent:
     image: ghcr.io/linuxserver/qbittorren
     network_mode: service:vpn
