@@ -146,7 +146,7 @@ restart_daemon
 
 echo "[$(date -Iseconds)] Logging in"
 nordvpn logout > /dev/null
-nordvpn login -u "${USER}" -p "${PASS}" || {
+nordvpn login --username "${USER}" --password "${PASS}" || {
   echo "[$(date -Iseconds)] Invalid Username or password."
   exit 1
 }
