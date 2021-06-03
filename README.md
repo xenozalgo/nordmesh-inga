@@ -175,7 +175,7 @@ services:
    - Provide a [country_code] argument to connect to a specific country. For example: us 
    - Provide a [city] argument to connect to a specific city. For example: 'Hungary Budapest' , Use `docker run --rm ghcr.io/bubuntux/nordvpn cities [country]` to get the list of cities. 
    - Provide a [group] argument to connect to a specific servers group. For example: P2P , Use `docker run --rm ghcr.io/bubuntux/nordvpn n_groups` to get the full list.
-   - --group value, -g value  Specify a server group to connect to. For example: 'us -g p2p'
+   - --group value  Specify a server group to connect to. For example: '--group p2p us'
 * `CYBER_SEC`  - Enable or Disable. When enabled, the CyberSec feature will automatically block suspicious websites so that no malware or other cyber threats can infect your device. Additionally, no flashy ads will come into your sight. More information on how it works: https://nordvpn.com/features/cybersec/.
 * `DNS` -   Can set up to 3 DNS servers. For example 1.1.1.1,8.8.8.8 or Disable, Setting DNS disables CyberSec.
 * `FIREWALL`  - Enable or Disable.
@@ -192,7 +192,7 @@ services:
 * `PORT_RANGE`  - Port range to whitelist for both UDP and TCP. For example '- PORT_RANGE=9091 9095'
 * `RECONNECT`  - Time in seconds to check connection and reconnect if need it. (300 by default) For example '- RECONNECT=600'
 * `TZ`  - Specify a timezone to use. For example  '- TZ=Europe/London'
-* `DEBUG`    - Set to 'on' for troubleshooting (User and Pass maybe logged).
+* `DEBUG`    - Trace or Info. Set to 'trace' for troubleshooting (User and Pass can be logged).
 
 # Issues
 

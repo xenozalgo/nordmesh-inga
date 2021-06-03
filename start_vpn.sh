@@ -1,15 +1,14 @@
 #!/bin/bash
-iptables -F
-iptables -X
+iptables -P OUTPUT DROP
 iptables -P INPUT DROP
 iptables -P FORWARD DROP
-iptables -P OUTPUT DROP
-
-ip6tables -F 2>/dev/null
-ip6tables -X 2>/dev/null
+ip6tables -P OUTPUT DROP 2>/dev/null
 ip6tables -P INPUT DROP 2>/dev/null
 ip6tables -P FORWARD DROP 2>/dev/null
-ip6tables -P OUTPUT DROP 2>/dev/null
+iptables -F
+iptables -X
+ip6tables -F 2>/dev/null
+ip6tables -X 2>/dev/null
 
 [[ "${DEBUG,,}" = "trace"  ]] && set -x
 
