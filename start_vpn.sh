@@ -11,6 +11,8 @@ ip6tables -P INPUT DROP 2>/dev/null
 ip6tables -P FORWARD DROP 2>/dev/null
 ip6tables -P OUTPUT DROP 2>/dev/null
 
+[[ "${DEBUG,,}" = "trace"  ]] && set -x
+
 if [ "$(cat /etc/timezone)" != "${TZ}" ]; then
   if [ -d "/usr/share/zoneinfo/${TZ}" ] || [ ! -e "/usr/share/zoneinfo/${TZ}" ] || [ -z "${TZ}" ]; then
     TZ="Etc/UTC"
@@ -20,67 +22,70 @@ if [ "$(cat /etc/timezone)" != "${TZ}" ]; then
 fi
 
 echo "[$(date -Iseconds)] Firewall is up, everything has to go through the vpn"
+docker_network="$(ip -o addr show dev eth0 | awk '$3 == "inet" {print $4}')"
+docker6_network="$(ip -o addr show dev eth0 | awk '$3 == "inet6" {print $4; exit}')"
+
 echo "[$(date -Iseconds)] Enabling connection to secure interfaces"
-
-iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
-iptables -A INPUT -i lo -j ACCEPT
-iptables -A FORWARD -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
-iptables -A FORWARD -i lo -j ACCEPT
-iptables -A OUTPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
-iptables -A OUTPUT -o lo -j ACCEPT
-iptables -A OUTPUT -o tap+ -j ACCEPT
-iptables -A OUTPUT -o tun+ -j ACCEPT
-iptables -A OUTPUT -o nordlynx+ -j ACCEPT
-iptables -t nat -A POSTROUTING -o tap+ -j MASQUERADE
-iptables -t nat -A POSTROUTING -o tun+ -j MASQUERADE
-iptables -t nat -A POSTROUTING -o nordlynx+ -j MASQUERADE
-
-ip6tables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT 2>/dev/null
-ip6tables -A INPUT -p icmp -j ACCEPT 2>/dev/null
-ip6tables -A INPUT -i lo -j ACCEPT 2>/dev/null
-ip6tables -A FORWARD -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT 2>/dev/null
-ip6tables -A FORWARD -p icmp -j ACCEPT 2>/dev/null
-ip6tables -A FORWARD -i lo -j ACCEPT 2>/dev/null
-ip6tables -A OUTPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT 2>/dev/null
-ip6tables -A OUTPUT -o lo -j ACCEPT 2>/dev/null
-ip6tables -A OUTPUT -o tap+ -j ACCEPT 2>/dev/null
-ip6tables -A OUTPUT -o tun+ -j ACCEPT 2>/dev/null
-ip6tables -A OUTPUT -o nordlynx+ -j ACCEPT 2>/dev/null
-ip6tables -t nat -A POSTROUTING -o tap+ -j MASQUERADE 2>/dev/null
-ip6tables -t nat -A POSTROUTING -o tun+ -j MASQUERADE 2>/dev/null
-ip6tables -t nat -A POSTROUTING -o nordlynx+ -j MASQUERADE 2>/dev/null
+if [[ -n ${docker_network} ]]; then
+  iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+  iptables -A INPUT -i lo -j ACCEPT
+  iptables -A FORWARD -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+  iptables -A FORWARD -i lo -j ACCEPT
+  iptables -A OUTPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+  iptables -A OUTPUT -o lo -j ACCEPT
+  iptables -A OUTPUT -o tap+ -j ACCEPT
+  iptables -A OUTPUT -o tun+ -j ACCEPT
+  iptables -A OUTPUT -o nordlynx+ -j ACCEPT
+  iptables -t nat -A POSTROUTING -o tap+ -j MASQUERADE
+  iptables -t nat -A POSTROUTING -o tun+ -j MASQUERADE
+  iptables -t nat -A POSTROUTING -o nordlynx+ -j MASQUERADE
+fi
+if [[ -n ${docker6_network} ]]; then
+  ip6tables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+  ip6tables -A INPUT -p icmp -j ACCEPT
+  ip6tables -A INPUT -i lo -j ACCEPT
+  ip6tables -A FORWARD -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+  ip6tables -A FORWARD -p icmp -j ACCEPT
+  ip6tables -A FORWARD -i lo -j ACCEPT
+  ip6tables -A OUTPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+  ip6tables -A OUTPUT -o lo -j ACCEPT
+  ip6tables -A OUTPUT -o tap+ -j ACCEPT
+  ip6tables -A OUTPUT -o tun+ -j ACCEPT
+  ip6tables -A OUTPUT -o nordlynx+ -j ACCEPT
+  ip6tables -t nat -A POSTROUTING -o tap+ -j MASQUERADE
+  ip6tables -t nat -A POSTROUTING -o tun+ -j MASQUERADE
+  ip6tables -t nat -A POSTROUTING -o nordlynx+ -j MASQUERADE
+fi
 
 echo "[$(date -Iseconds)] Enabling connection to nordvpn group"
-
-iptables -A OUTPUT -m owner --gid-owner nordvpn -j ACCEPT || {
-  echo "[$(date -Iseconds)] group match failed, fallback to open necessary ports"
-  iptables -A OUTPUT -p udp -m udp --dport 53 -j ACCEPT
-  iptables -A OUTPUT -p udp -m udp --dport 51820 -j ACCEPT
-  iptables -A OUTPUT -p tcp -m tcp --dport 1194 -j ACCEPT
-  iptables -A OUTPUT -p udp -m udp --dport 1194 -j ACCEPT
-  iptables -A OUTPUT -p tcp -m tcp --dport 443 -j ACCEPT
-}
-
-ip6tables -A OUTPUT -m owner --gid-owner nordvpn -j ACCEPT 2>/dev/null || {
-  echo "[$(date -Iseconds)] ip6 group match failed, fallback to open necessary ports"
-  ip6tables -A OUTPUT -p udp -m udp --dport 53 -j ACCEPT 2>/dev/null
-  ip6tables -A OUTPUT -p udp -m udp --dport 51820 -j ACCEPT 2>/dev/null
-  ip6tables -A OUTPUT -p tcp -m tcp --dport 1194 -j ACCEPT 2>/dev/null
-  ip6tables -A OUTPUT -p udp -m udp --dport 1194 -j ACCEPT 2>/dev/null
-  ip6tables -A OUTPUT -p tcp -m tcp --dport 443 -j ACCEPT 2>/dev/null
-}
+if [[ -n ${docker_network} ]]; then
+  iptables -A OUTPUT -m owner --gid-owner nordvpn -j ACCEPT || {
+    echo "[$(date -Iseconds)] group match failed, fallback to open necessary ports"
+    iptables -A OUTPUT -p udp -m udp --dport 53 -j ACCEPT
+    iptables -A OUTPUT -p udp -m udp --dport 51820 -j ACCEPT
+    iptables -A OUTPUT -p tcp -m tcp --dport 1194 -j ACCEPT
+    iptables -A OUTPUT -p udp -m udp --dport 1194 -j ACCEPT
+    iptables -A OUTPUT -p tcp -m tcp --dport 443 -j ACCEPT
+  }
+fi
+if [[ -n ${docker6_network} ]]; then
+  ip6tables -A OUTPUT -m owner --gid-owner nordvpn -j ACCEPT || {
+    echo "[$(date -Iseconds)] ip6 group match failed, fallback to open necessary ports"
+    ip6tables -A OUTPUT -p udp -m udp --dport 53 -j ACCEPT
+    ip6tables -A OUTPUT -p udp -m udp --dport 51820 -j ACCEPT
+    ip6tables -A OUTPUT -p tcp -m tcp --dport 1194 -j ACCEPT
+    ip6tables -A OUTPUT -p udp -m udp --dport 1194 -j ACCEPT
+    ip6tables -A OUTPUT -p tcp -m tcp --dport 443 -j ACCEPT
+  }
+fi
 
 echo "[$(date -Iseconds)] Enabling connection to docker network"
-
-docker_network="$(ip -o addr show dev eth0 | awk '$3 == "inet" {print $4}')"
 if [[ -n ${docker_network} ]]; then
   iptables -A INPUT -s "${docker_network}" -j ACCEPT
   iptables -A FORWARD -d "${docker_network}" -j ACCEPT
   iptables -A FORWARD -s "${docker_network}" -j ACCEPT
   iptables -A OUTPUT -d "${docker_network}" -j ACCEPT
 fi
-
-docker6_network="$(ip -o addr show dev eth0 | awk '$3 == "inet6" {print $4; exit}')"
 if [[ -n ${docker6_network} ]]; then
   ip6tables -A INPUT -s "${docker6_network}" -j ACCEPT 2>/dev/null
   ip6tables -A FORWARD -d "${docker6_network}" -j ACCEPT 2>/dev/null
@@ -88,7 +93,7 @@ if [[ -n ${docker6_network} ]]; then
   ip6tables -A OUTPUT -d "${docker6_network}" -j ACCEPT 2>/dev/null
 fi
 
-if [[ -n ${NETWORK} ]]; then
+if [[ -n ${docker_network} && -n ${NETWORK} ]]; then
   gw=$(ip route | awk '/default/ {print $3}')
   for net in ${NETWORK//[;,]/ }; do
     echo "[$(date -Iseconds)] Enabling connection to network ${net}"
@@ -99,16 +104,15 @@ if [[ -n ${NETWORK} ]]; then
     iptables -A OUTPUT -d "$net" -j ACCEPT
   done
 fi
-
-if [[ -n ${NETWORK6} ]]; then
+if [[ -n ${docker6_network} && -n ${NETWORK6} ]]; then
   gw6=$(ip -6 route | awk '/default/{print $3}')
   for net6 in ${NETWORK6//[;,]/ }; do
     echo "[$(date -Iseconds)] Enabling connection to network ${net6}"
     ip -6 route | grep -q "$net6" || ip -6 route add to "$net6" via "$gw6" dev eth0
-    ip6tables -A INPUT -s "$net6" -j ACCEPT 2>/dev/null
-    ip6tables -A FORWARD -d "$net6" -j ACCEPT 2>/dev/null
-    ip6tables -A FORWARD -s "$net6" -j ACCEPT 2>/dev/null
-    ip6tables -A OUTPUT -d "$net6" -j ACCEPT 2>/dev/null
+    ip6tables -A INPUT -s "$net6" -j ACCEPT
+    ip6tables -A FORWARD -d "$net6" -j ACCEPT
+    ip6tables -A FORWARD -s "$net6" -j ACCEPT
+    ip6tables -A OUTPUT -d "$net6" -j ACCEPT
   done
 fi
 
@@ -160,8 +164,15 @@ echo "[$(date -Iseconds)] Setting up $(nordvpn -version)"
 [[ -n ${PROTOCOL} ]] && nordvpn set protocol ${PROTOCOL}
 [[ -n ${TECHNOLOGY} ]] && nordvpn set technology ${TECHNOLOGY}
 
-[[ -n ${docker_network} ]] && nordvpn whitelist add subnet ${docker_network}
-[[ -n ${NETWORK} ]] && for net in ${NETWORK//[;,]/ }; do nordvpn whitelist add subnet "${net}"; done
+if [[ -n ${docker_network} ]];then
+  nordvpn whitelist add subnet ${docker_network}
+  [[ -n ${NETWORK} ]] && for net in ${NETWORK//[;,]/ }; do nordvpn whitelist add subnet "${net}"; done
+fi
+if [[ -n ${docker6_network} ]];then
+  nordvpn set ipv6 on
+  nordvpn whitelist add subnet ${docker6_network}
+  [[ -n ${NETWORK6} ]] && for net in ${NETWORK6//[;,]/ }; do nordvpn whitelist add subnet "${net}"; done
+fi
 [[ -n ${PORTS} ]] && for port in ${PORTS//[;,]/ }; do nordvpn whitelist add port "${port}"; done
 [[ -n ${PORT_RANGE} ]] && nordvpn whitelist add ports ${PORT_RANGE}
 [[ -n ${DEBUG} ]] && nordvpn settings
@@ -179,11 +190,12 @@ connect() {
     attempt_counter=$((attempt_counter + 1))
     sleep 5
   done
-  [[ -n ${DEBUG} ]] && tail -n 1 -f --pid="$(cat /run/nordvpn/nordvpn.pid)" /var/log/nordvpn/daemon.log &
 }
 connect
+[[ -n ${DEBUG} ]] && tail -n 1 -f /var/log/nordvpn/daemon.log &
 
 cleanup() {
+  nordvpn status
   nordvpn disconnect
   service nordvpn stop
   trap - SIGTERM SIGINT EXIT # https://bash.cyberciti.biz/guide/How_to_clear_trap
