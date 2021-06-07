@@ -43,7 +43,7 @@ services:
     ports:
       - 8080:8080
   torrent:
-    image: ghcr.io/linuxserver/qbittorren
+    image: ghcr.io/linuxserver/qbittorrent
     network_mode: service:vpn
     depends_on:
       - vpn
@@ -80,7 +80,7 @@ services:
       - CONNECT=United_States
       - TECHNOLOGY=NordLynx
   torrent:
-    image: ghcr.io/linuxserver/qbittorren
+    image: ghcr.io/linuxserver/qbittorrent
     network_mode: service:vpn
     labels:
       - traefik.enable=true
