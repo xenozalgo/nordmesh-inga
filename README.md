@@ -43,7 +43,7 @@ services:
     ports:
       - 8080:8080
   torrent:
-    image: ghcr.io/linuxserver/qbittorren
+    image: ghcr.io/linuxserver/qbittorrent
     network_mode: service:vpn
     depends_on:
       - vpn
@@ -80,7 +80,7 @@ services:
       - CONNECT=United_States
       - TECHNOLOGY=NordLynx
   torrent:
-    image: ghcr.io/linuxserver/qbittorren
+    image: ghcr.io/linuxserver/qbittorrent
     network_mode: service:vpn
     labels:
       - traefik.enable=true
@@ -169,6 +169,7 @@ services:
 
 * `USER`     - User for NordVPN account.
 * `PASS`     - Password for NordVPN account, surrounding the password in single quotes will prevent issues with special characters such as `$`.
+* `PASSFILE` - File from which to get `PASS`, if using [docker secrets](https://docs.docker.com/compose/compose-file/compose-file-v3/#secrets) this should be set to `/run/secrets/<secret_name>`. This file should contain just the account password on the first line.
 * `CONNECT`  -  [country]/[server]/[country_code]/[city]/[group] or [country] [city], if none provide you will connect to  the recommended server.
    - Provide a [country] argument to connect to a specific country. For example: Australia , Use `docker run --rm ghcr.io/bubuntux/nordvpn countries` to get the list of countries.
    - Provide a [server] argument to connect to a specific server. For example: jp35 , [Full List](https://nordvpn.com/servers/tools/)
