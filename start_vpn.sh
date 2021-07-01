@@ -202,9 +202,10 @@ cleanup() {
 }
 trap cleanup SIGTERM SIGINT EXIT # https://www.ctl.io/developers/blog/post/gracefully-stopping-docker-containers/
 
+[[ -n ${RECONNECT} && -z ${CHECK_CONNECTION_INTERVAL} ]] && CHECK_CONNECTION_INTERVAL=${RECONNECT}
 while true; do
-  sleep "${RECONNECT:-300}"
-  if [ "$(curl -m 30 -s https://api.nordvpn.com/v1/helpers/ips/insights | jq -r '.["protected"]')" != "true" ]; then
+  sleep "${CHECK_CONNECTION_INTERVAL:-300}"
+  if [[ ! $(curl -Is -m 30 -o /dev/null -w "%{http_code}" "${CHECK_CONNECTION_URL:-www.google.com}") =~ ^[23] ]]; then
     echo "[$(date -Iseconds)] Unstable connection detected!"
     nordvpn status
     restart_daemon

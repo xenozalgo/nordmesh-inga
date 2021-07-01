@@ -190,7 +190,8 @@ services:
 * `NETWORK6` - CIDR IPv6 networks (IE fe00:d34d:b33f::/64), add a route to allows replies once the VPN is up.
 * `PORTS`  - Semicolon delimited list of ports to whitelist for both UDP and TCP. For example '- PORTS=9091;9095'
 * `PORT_RANGE`  - Port range to whitelist for both UDP and TCP. For example '- PORT_RANGE=9091 9095'
-* `RECONNECT`  - Time in seconds to check connection and reconnect if need it. (300 by default) For example '- RECONNECT=600'
+* `CHECK_CONNECTION_INTERVAL`  - Time in seconds to check connection and reconnect if need it. (300 by default) For example '- CHECK_CONNECTION_INTERVAL=600'
+* `CHECK_CONNECTION_URL`  - URL for checking Internet connection. (www.google.com by default) For example '- CHECK_CONNECTION_URL=www.custom.domain'
 * `TZ`  - Specify a timezone to use. For example  '- TZ=Europe/London'
 * `DEBUG`    - Trace or Info. Set to 'trace' for troubleshooting (User and Pass can be logged).
 
