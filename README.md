@@ -199,3 +199,7 @@ services:
 # Issues
 
 If you have any problems with or questions about this image, please contact me through a [GitHub issue](https://github.com/bubuntux/nordvpn/issues).
+
+# Disclaimer 
+This project is independently developed for personal use, there is no affiliation with NordVpn or Nord Security companies,
+Nord Security companies are not responsible for and have no control over the nature, content and availability of this project.
