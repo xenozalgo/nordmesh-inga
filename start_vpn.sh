@@ -115,15 +115,6 @@ if [[ -n ${docker6_network} && -n ${NETWORK6} ]]; then
   done
 fi
 
-if [[ -n ${WHITELIST} ]]; then
-  for domain in ${WHITELIST//[;,]/ }; do
-    domain=$(echo "$domain" | sed 's/^.*:\/\///;s/\/.*$//')
-    echo "[$(date -Iseconds)] Enabling connection to host ${domain}"
-    sg nordvpn -c "iptables  -A OUTPUT -o eth0 -d ${domain} -j ACCEPT"
-    sg nordvpn -c "ip6tables -A OUTPUT -o eth0 -d ${domain} -j ACCEPT 2>/dev/null"
-  done
-fi
-
 mkdir -p /dev/net
 [[ -c /dev/net/tun ]] || mknod -m 0666 /dev/net/tun c 10 200
 
@@ -194,6 +185,15 @@ connect() {
 }
 connect
 [[ -n ${DEBUG} ]] && tail -n 1 -f /var/log/nordvpn/daemon.log &
+
+if [[ -n ${WHITELIST} ]]; then
+  for domain in ${WHITELIST//[;,]/ }; do
+    domain=$(echo "$domain" | sed 's/^.*:\/\///;s/\/.*$//')
+    echo "[$(date -Iseconds)] Enabling connection to host ${domain}"
+    iptables  -A OUTPUT -o eth0 -d "${domain}" -j ACCEPT
+    ip6tables -A OUTPUT -o eth0 -d "${domain}" -j ACCEPT 2>/dev/null
+  done
+fi
 
 cleanup() {
   nordvpn status
