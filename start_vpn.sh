@@ -181,7 +181,7 @@ fi
 connect() {
   echo "[$(date -Iseconds)] Connecting..."
   attempt_counter=0
-  max_attempts=240
+  max_attempts=360
   until nordvpn connect ${CONNECT}; do
     if [ ${attempt_counter} -eq ${max_attempts} ]; then
       echo "[$(date -Iseconds)] Unable to connect."
@@ -189,7 +189,7 @@ connect() {
       exit 1
     fi
     attempt_counter=$((attempt_counter + 1))
-    sleep 5
+    sleep 10
   done
 }
 connect
