@@ -181,15 +181,14 @@ fi
 connect() {
   echo "[$(date -Iseconds)] Connecting..."
   attempt_counter=0
-  max_attempts=360
   until nordvpn connect ${CONNECT}; do
-    if [ ${attempt_counter} -eq ${max_attempts} ]; then
+    if [ "${attempt_counter}" -eq "${CONNECTION_ATTEMPTS:-120}" ]; then
       echo "[$(date -Iseconds)] Unable to connect."
       tail -n 200 /var/log/nordvpn/daemon.log
       exit 1
     fi
     attempt_counter=$((attempt_counter + 1))
-    sleep 10
+    sleep "${CONNECTION_INTERNAL:-60}"
   done
 }
 connect
