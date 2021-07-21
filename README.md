@@ -177,6 +177,7 @@ services:
    - Provide a [city] argument to connect to a specific city. For example: 'Hungary Budapest' , Use `docker run --rm ghcr.io/bubuntux/nordvpn cities [country]` to get the list of cities. 
    - Provide a [group] argument to connect to a specific servers group. For example: P2P , Use `docker run --rm ghcr.io/bubuntux/nordvpn n_groups` to get the full list.
    - --group value  Specify a server group to connect to. For example: '--group p2p us'
+* `POST_CONNECT` - Command to execute after successful connection.
 * `CYBER_SEC`  - Enable or Disable. When enabled, the CyberSec feature will automatically block suspicious websites so that no malware or other cyber threats can infect your device. Additionally, no flashy ads will come into your sight. More information on how it works: https://nordvpn.com/features/cybersec/.
 * `DNS` -   Can set up to 3 DNS servers. For example 1.1.1.1,8.8.8.8 or Disable, Setting DNS disables CyberSec.
 * `FIREWALL`  - Enable or Disable.

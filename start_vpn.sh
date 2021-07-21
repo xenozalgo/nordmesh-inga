@@ -191,6 +191,9 @@ connect() {
     sleep ${current_sleep}
     current_sleep=$((current_sleep * 2))
   done
+  if [[ ! -z "${POST_CONNECT}" ]]; then
+    eval ${POST_CONNECT}
+  fi
 }
 connect
 [[ -n ${DEBUG} ]] && tail -n 1 -f /var/log/nordvpn/daemon.log &
