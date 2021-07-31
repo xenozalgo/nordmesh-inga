@@ -201,6 +201,7 @@ connect
 cleanup() {
   nordvpn status
   nordvpn disconnect
+  nordvpn logout
   service nordvpn stop
   trap - SIGTERM SIGINT EXIT # https://bash.cyberciti.biz/guide/How_to_clear_trap
   exit 0
