@@ -147,8 +147,10 @@ restart_daemon() {
 }
 restart_daemon
 
+echo "[$(date -Iseconds)] Pre settings $(nordvpn -version)"
+[[ -n ${DNS} ]] && nordvpn set dns ${DNS//[;,]/ }
+[[ -n ${CYBER_SEC} ]] && nordvpn set cybersec ${CYBER_SEC}
 [[ -n ${OBFUSCATE} ]] && nordvpn set obfuscate ${OBFUSCATE}
-
 
 [[ -z "${PASS}" ]] && [[ -f "${PASSFILE}" ]] && PASS="$(head -n 1 "${PASSFILE}")"
 
@@ -159,9 +161,7 @@ nordvpn login --username "${USER}" --password "${PASS}" || {
   exit 1
 }
 
-echo "[$(date -Iseconds)] Setting up $(nordvpn -version)"
-[[ -n ${CYBER_SEC} ]] && nordvpn set cybersec ${CYBER_SEC}
-[[ -n ${DNS} ]] && nordvpn set dns ${DNS//[;,]/ }
+echo "[$(date -Iseconds)] Post settings $(nordvpn -version)"
 [[ -n ${FIREWALL} ]] && nordvpn set firewall ${FIREWALL}
 [[ -n ${KILLSWITCH} ]] && nordvpn set killswitch ${KILLSWITCH}
 [[ -n ${PROTOCOL} ]] && nordvpn set protocol ${PROTOCOL}
