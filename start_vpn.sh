@@ -147,6 +147,9 @@ restart_daemon() {
 }
 restart_daemon
 
+[[ -n ${OBFUSCATE} ]] && nordvpn set obfuscate ${OBFUSCATE}
+
+
 [[ -z "${PASS}" ]] && [[ -f "${PASSFILE}" ]] && PASS="$(head -n 1 "${PASSFILE}")"
 
 echo "[$(date -Iseconds)] Logging in"
@@ -161,7 +164,6 @@ echo "[$(date -Iseconds)] Setting up $(nordvpn -version)"
 [[ -n ${DNS} ]] && nordvpn set dns ${DNS//[;,]/ }
 [[ -n ${FIREWALL} ]] && nordvpn set firewall ${FIREWALL}
 [[ -n ${KILLSWITCH} ]] && nordvpn set killswitch ${KILLSWITCH}
-[[ -n ${OBFUSCATE} ]] && nordvpn set obfuscate ${OBFUSCATE}
 [[ -n ${PROTOCOL} ]] && nordvpn set protocol ${PROTOCOL}
 [[ -n ${TECHNOLOGY} ]] && nordvpn set technology ${TECHNOLOGY}
 
