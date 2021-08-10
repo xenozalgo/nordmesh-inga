@@ -150,7 +150,7 @@ restart_daemon
 echo "[$(date -Iseconds)] Pre settings $(nordvpn -version)"
 [[ -n ${DNS} ]] && nordvpn set dns ${DNS//[;,]/ }
 [[ -n ${CYBER_SEC} ]] && nordvpn set cybersec ${CYBER_SEC}
-[[ -n ${OBFUSCATE} ]] && nordvpn set obfuscate ${OBFUSCATE}
+[[ -n ${OBFUSCATE} ]] && nordvpn set obfuscate ${OBFUSCATE} && sleep 3
 
 [[ -z "${PASS}" ]] && [[ -f "${PASSFILE}" ]] && PASS="$(head -n 1 "${PASSFILE}")"
 
