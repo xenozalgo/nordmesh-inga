@@ -10,14 +10,14 @@ iptables -X
 ip6tables -F 2>/dev/null
 ip6tables -X 2>/dev/null
 
-[[ "${DEBUG,,}" = "trace"  ]] && set -x
+[[ "${DEBUG,,}" == trace* ]] && set -x
 
 if [ "$(cat /etc/timezone)" != "${TZ}" ]; then
   if [ -d "/usr/share/zoneinfo/${TZ}" ] || [ ! -e "/usr/share/zoneinfo/${TZ}" ] || [ -z "${TZ}" ]; then
     TZ="Etc/UTC"
   fi
   ln -fs "/usr/share/zoneinfo/${TZ}" /etc/localtime
-  dpkg-reconfigure -f noninteractive tzdata 2> /dev/null
+  dpkg-reconfigure -f noninteractive tzdata 2>/dev/null
 fi
 
 echo "[$(date -Iseconds)] Firewall is up, everything has to go through the vpn"
@@ -147,31 +147,37 @@ restart_daemon() {
 }
 restart_daemon
 
-echo "[$(date -Iseconds)] Pre settings $(nordvpn -version)"
+echo "[$(date -Iseconds)] Pre-logging settings $(nordvpn -version)"
 [[ -n ${DNS} ]] && nordvpn set dns ${DNS//[;,]/ }
 [[ -n ${CYBER_SEC} ]] && nordvpn set cybersec ${CYBER_SEC}
 [[ -n ${OBFUSCATE} ]] && nordvpn set obfuscate ${OBFUSCATE} && sleep 3
 
+if [[ "${DEBUG,,}" == trace+* ]]; then
+  echo "[$(date -Iseconds)] ############# WARNING ############### make sure to remove user/pass before sharing this log"
+else
+  set +x
+  [[ "${DEBUG,,}" == trace* ]] && echo "[$(date -Iseconds)] Hiding user/password from the logs, set DEBUG=trace+ if you want to show them in the logs"
+fi
 [[ -z "${PASS}" ]] && [[ -f "${PASSFILE}" ]] && PASS="$(head -n 1 "${PASSFILE}")"
-
 echo "[$(date -Iseconds)] Logging in"
-nordvpn logout > /dev/null
+nordvpn logout >/dev/null
 nordvpn login --username "${USER}" --password "${PASS}" || {
   echo "[$(date -Iseconds)] Invalid Username or password."
   exit 1
 }
+[[ "${DEBUG,,}" == trace* ]] && set -x
 
-echo "[$(date -Iseconds)] Post settings $(nordvpn -version)"
+echo "[$(date -Iseconds)] Post-logging settings $(nordvpn -version)"
 [[ -n ${FIREWALL} ]] && nordvpn set firewall ${FIREWALL}
 [[ -n ${KILLSWITCH} ]] && nordvpn set killswitch ${KILLSWITCH}
 [[ -n ${PROTOCOL} ]] && nordvpn set protocol ${PROTOCOL}
 [[ -n ${TECHNOLOGY} ]] && nordvpn set technology ${TECHNOLOGY}
 
-if [[ -n ${docker_network} ]];then
+if [[ -n ${docker_network} ]]; then
   nordvpn whitelist add subnet ${docker_network}
   [[ -n ${NETWORK} ]] && for net in ${NETWORK//[;,]/ }; do nordvpn whitelist add subnet "${net}"; done
 fi
-if [[ -n ${docker6_network} ]];then
+if [[ -n ${docker6_network} ]]; then
   nordvpn set ipv6 on
   nordvpn whitelist add subnet ${docker6_network}
   [[ -n ${NETWORK6} ]] && for net in ${NETWORK6//[;,]/ }; do nordvpn whitelist add subnet "${net}"; done
