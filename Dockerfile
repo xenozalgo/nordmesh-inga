@@ -4,7 +4,7 @@ LABEL maintainer="Julio Gutierrez julio.guti+nordvpn@pm.me"
 ARG NORDVPN_VERSION=3.11.0-1
 
 RUN apt-get update -y && \
-    apt-get install -y curl iputils-ping wireguard && \
+    apt-get install -y curl iputils-ping libc6 wireguard && \
     curl https://repo.nordvpn.com/deb/nordvpn/debian/pool/main/nordvpn-release_1.0.0_all.deb --output /tmp/nordrepo.deb && \
     apt-get install -y /tmp/nordrepo.deb && \
     apt-get update -y && \
