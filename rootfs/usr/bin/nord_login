@@ -1,0 +1,8 @@
+#!/usr/bin/with-contenv bash
+
+nordvpn login --username "${USER}" --password "${PASS}" || {
+  echo "Invalid Username or password."
+  exit 1
+}
+
+exit 0

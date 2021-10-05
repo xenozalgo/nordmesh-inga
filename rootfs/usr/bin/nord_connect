@@ -1,0 +1,9 @@
+#!/usr/bin/with-contenv bash
+
+[[ -n ${PRE_CONNECT} ]] && eval ${PRE_CONNECT}
+
+nordvpn connect ${CONNECT}
+
+[[ -n ${POST_CONNECT} ]] && eval ${POST_CONNECT}
+
+exit 0
