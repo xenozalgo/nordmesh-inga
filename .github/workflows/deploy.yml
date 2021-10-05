@@ -45,7 +45,7 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v2
         with:
-          platforms: linux/amd64,linux/arm64,linux/arm/v7,linux/386
+          platforms: linux/amd64,linux/arm64,linux/arm/v7
           push: true
           tags: |
             ${{ github.repository }}:${{ steps.git.outputs.name }}
@@ -55,7 +55,7 @@ jobs:
         uses: docker/build-push-action@v2
         if: steps.git.outputs.tag == 'true'
         with:
-          platforms: linux/amd64,linux/arm64,linux/arm/v7,linux/386
+          platforms: linux/amd64,linux/arm64,linux/arm/v7
           push: true
           tags: |
             ${{ github.repository }}:latest
