@@ -1,5 +1,3 @@
 #!/bin/bash
 
-nordvpn disconnect
-nordvpn logout
 rm -rf /run/nordvpn
