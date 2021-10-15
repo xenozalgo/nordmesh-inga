@@ -10,3 +10,5 @@ while true; do
     nord_connect
   fi
 done
+
+exit 0

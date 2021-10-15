@@ -13,4 +13,8 @@ nordvpn set technology ${TECHNOLOGY:-NordLynx}
 [[ -n ${PORTS} ]] && for port in ${PORTS//[;,]/ }; do nordvpn whitelist add port "${port}"; done
 [[ -n ${PORT_RANGE} ]] && nordvpn whitelist add ports ${PORT_RANGE}
 
+docker_networks=$(dockerNetworks)
+[[ -n ${docker_networks} ]] && for net in ${docker_networks//[;,]/ }; do nordvpn whitelist add subnet "${net}"; done
+[[ -n ${NET_LOCAL} ]] && for net in ${NET_LOCAL//[;,]/ }; do nordvpn whitelist add subnet "${net}"; done
+
 exit 0
