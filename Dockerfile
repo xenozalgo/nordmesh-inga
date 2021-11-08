@@ -1,7 +1,7 @@
 FROM ubuntu:18.04
 
 LABEL maintainer="Julio Gutierrez"
-ARG NORDVPN_VERSION=3.11.0-1
+ARG NORDVPN_VERSION=3.12.0-1
 
 RUN apt-get update -y && \
     apt-get install -y curl iputils-ping tzdata && \
