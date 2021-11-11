@@ -1,0 +1,12 @@
+#!/bin/bash
+
+nord_login
+nord_config
+nord_connect
+
+echo "############################################################"
+echo "IP: $(ip -o addr show dev nordlynx | awk '$3 == "inet" {print $4}')"
+echo "Private Key: $(wg show nordlynx private-key)"
+echo "############################################################"
+
+exit 0

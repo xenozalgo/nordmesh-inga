@@ -1,0 +1,9 @@
+#!/usr/bin/with-contenv bash
+
+[[ -z "${PASS}" ]] && [[ -f "${PASSFILE}" ]] && PASS="$(head -n 1 "${PASSFILE}")"
+nordvpn login --username "${USER}" --password "${PASS}" || {
+  echo "Invalid Username or password."
+  exit 1
+}
+
+exit 0
