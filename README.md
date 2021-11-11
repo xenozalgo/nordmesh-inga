@@ -1,13 +1,13 @@
 <p align="center">
-    <a href="https://nordvpn.com/"><img src="https://github.com/nrdvpn/client/raw/master/.img/NordVpn_logo.png"/></a>
+    <a href="https://nordvpn.com/"><img src="https://github.com/bubuntux/nordvpn/raw/master/.img/NordVpn_logo.png"/></a>
     </br>
-    <a href="https://github.com/nrdvpn/client/blob/master/LICENSE"><img src="https://badgen.net/github/license/nrdvpn/client?color=cyan"/></a>
-    <a href="https://cloud.docker.com/u/bubuntux/repository/docker/nrdvpn/client"><img src="https://badgen.net/docker/size/nrdvpn/client?icon=docker&label=size"/></a>
-    <a href="https://cloud.docker.com/u/bubuntux/repository/docker/nrdvpn/client"><img src="https://badgen.net/docker/pulls/nrdvpn/client?icon=docker&label=pulls"/></a>
-    <a href="https://cloud.docker.com/u/bubuntux/repository/docker/nrdvpn/client"><img src="https://badgen.net/docker/stars/nrdvpn/client?icon=docker&label=stars"/></a>
-    <a href="https://github.com/nrdvpn/client"><img src="https://badgen.net/github/forks/nrdvpn/client?icon=github&label=forks&color=black"/></a>
-    <a href="https://github.com/nrdvpn/client"><img src="https://badgen.net/github/stars/nrdvpn/client?icon=github&label=stars&color=black"/></a>
-    <a href="https://github.com/nrdvpn/client/actions?query=workflow%3Arelease"><img src="https://github.com/nrdvpn/client/actions/workflows/deploy.yml/badge.svg"/></a>
+    <a href="https://github.com/bubuntux/nordvpn/blob/master/LICENSE"><img src="https://badgen.net/github/license/bubuntux/nordvpn?color=cyan"/></a>
+    <a href="https://cloud.docker.com/u/bubuntux/repository/docker/bubuntux/nordvpn"><img src="https://badgen.net/docker/size/bubuntux/nordvpn?icon=docker&label=size"/></a>
+    <a href="https://cloud.docker.com/u/bubuntux/repository/docker/bubuntux/nordvpn"><img src="https://badgen.net/docker/pulls/bubuntux/nordvpn?icon=docker&label=pulls"/></a>
+    <a href="https://cloud.docker.com/u/bubuntux/repository/docker/bubuntux/nordvpn"><img src="https://badgen.net/docker/stars/bubuntux/nordvpn?icon=docker&label=stars"/></a>
+    <a href="https://github.com/bubuntux/nordvpn"><img src="https://badgen.net/github/forks/bubuntux/nordvpn?icon=github&label=forks&color=black"/></a>
+    <a href="https://github.com/bubuntux/nordvpn"><img src="https://badgen.net/github/stars/bubuntux/nordvpn?icon=github&label=stars&color=black"/></a>
+    <a href="https://github.com/bubuntux/nordvpn/actions?query=workflow%3Arelease"><img src="https://github.com/bubuntux/nordvpn/workflows/release/badge.svg"/></a>
 </p>
 
 Official `NordVPN` client in a docker container; it makes routing traffic through the `NordVPN` network easy.
@@ -20,7 +20,7 @@ This container was designed to be started first to provide a connection to other
 ## Starting an NordVPN instance
     docker run -ti --cap-add=NET_ADMIN --name vpn \
                -e USER=user@email.com -e PASS='pas$word' \
-               -e TECHNOLOGY=NordLynx -d nrdvpn/client
+               -e TECHNOLOGY=NordLynx -d ghcr.io/bubuntux/nordvpn
 
 Once it's up other containers can be started using its network connection:
 
@@ -31,10 +31,10 @@ Once it's up other containers can be started using its network connection:
 version: "3"
 services:
   vpn:
-    image: ghcr.io/nrdvpn/client
+    image: ghcr.io/bubuntux/nordvpn
     cap_add:
       - NET_ADMIN               # Required
-    environment:                # Review https://github.com/nrdvpn/client#environment-variables
+    environment:                # Review https://github.com/bubuntux/nordvpn#environment-variables
       - USER=user@email.com     # Required
       - "PASS=pas$word"         # Required
       - CONNECT=United_States
@@ -73,10 +73,10 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     restart: unless-stopped
   vpn:
-    image: ghcr.io/nrdvpn/client
+    image: ghcr.io/bubuntux/nordvpn
     cap_add:
       - NET_ADMIN               # Required
-    environment:                # Review https://github.com/nrdvpn/client#environment-variables
+    environment:                # Review https://github.com/bubuntux/nordvpn#environment-variables
       - USER=user@email.com     # Required
       - "PASS=pas$word"         # Required
       - CONNECT=United_States
@@ -142,11 +142,11 @@ services:
       - /dev/dri:/dev/dri
     restart: unless-stopped
   vpn:
-    image: ghcr.io/nrdvpn/client
+    image: ghcr.io/bubuntux/nordvpn
     container_name: nordvpn
     cap_add:
       - NET_ADMIN               # Required
-    environment:                # Review https://github.com/nrdvpn/client#environment-variables
+    environment:                # Review https://github.com/bubuntux/nordvpn#environment-variables
       - USER=user@email.com     # Required
       - "PASS=pas$word"         # Required
       - CONNECT=United_States
@@ -177,11 +177,11 @@ services:
 * `PASS`     - Password for NordVPN account, surrounding the password in single quotes will prevent issues with special characters such as `$`.
 * `PASSFILE` - File from which to get `PASS`, if using [docker secrets](https://docs.docker.com/compose/compose-file/compose-file-v3/#secrets) this should be set to `/run/secrets/<secret_name>`. This file should contain just the account password on the first line.
 * `CONNECT`  -  [country]/[server]/[country_code]/[city]/[group] or [country] [city], if none provide you will connect to  the recommended server.
-   - Provide a [country] argument to connect to a specific country. For example: Australia , Use `docker run --rm nrdvpn/client nordvpn countries` to get the list of countries.
+   - Provide a [country] argument to connect to a specific country. For example: Australia , Use `docker run --rm ghcr.io/bubuntux/nordvpn nordvpn countries` to get the list of countries.
    - Provide a [server] argument to connect to a specific server. For example: jp35 , [Full List](https://nordvpn.com/servers/tools/)
    - Provide a [country_code] argument to connect to a specific country. For example: us 
-   - Provide a [city] argument to connect to a specific city. For example: 'Hungary Budapest' , Use `docker run --rm nrdvpn/client nordvpn cities [country]` to get the list of cities. 
-   - Provide a [group] argument to connect to a specific servers group. For example: P2P , Use `docker run --rm nrdvpn/client nordvpn groups` to get the full list.
+   - Provide a [city] argument to connect to a specific city. For example: 'Hungary Budapest' , Use `docker run --rm ghcr.io/bubuntux/nordvpn nordvpn cities [country]` to get the list of cities. 
+   - Provide a [group] argument to connect to a specific servers group. For example: P2P , Use `docker run --rm ghcr.io/bubuntux/nordvpn nordvpn groups` to get the full list.
    - --group value  Specify a server group to connect to. For example: '--group p2p us'
 * `PRE_CONNECT` - Command to execute before attempt to connect.
 * `POST_CONNECT` - Command to execute after successful connection.
@@ -203,7 +203,7 @@ services:
 
 # Issues
 
-If you have any problems with or questions about this image, please contact me through a [GitHub issue](https://github.com/nrdvpn/client/issues).
+If you have any problems with or questions about this image, please contact me through a [GitHub issue](https://github.com/bubuntux/nordvpn/issues).
 
 # Disclaimer 
 This project is independently developed for personal use, there is no affiliation with NordVpn or Nord Security companies,
