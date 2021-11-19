@@ -13,24 +13,24 @@ ip6tables -X
 
 ip6tables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 ip6tables -A INPUT -i lo -j ACCEPT
-ip6tables -A INPUT -s "${docker_networks}" -j ACCEPT
+ip6tables -A INPUT -i eth0 -s "${docker_networks}" -j ACCEPT
 
 ip6tables -A OUTPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 ip6tables -A OUTPUT -o lo -j ACCEPT
-ip6tables -A OUTPUT -d "${docker_networks}" -j ACCEPT
 ip6tables -A OUTPUT -o tap+ -j ACCEPT
 ip6tables -A OUTPUT -o tun+ -j ACCEPT
 ip6tables -A OUTPUT -o nordlynx+ -j ACCEPT
-ip6tables -A OUTPUT -p udp -m udp --dport 53 -j ACCEPT
-ip6tables -A OUTPUT -p udp -m udp --dport 51820 -j ACCEPT
-ip6tables -A OUTPUT -p tcp -m tcp --dport 1194 -j ACCEPT
-ip6tables -A OUTPUT -p udp -m udp --dport 1194 -j ACCEPT
-ip6tables -A OUTPUT -p tcp -m tcp --dport 443 -j ACCEPT
+ip6tables -A OUTPUT -o eth0 -d "${docker_networks}" -j ACCEPT
+ip6tables -A OUTPUT -o eth0 -p udp -m udp --dport 53 -j ACCEPT
+ip6tables -A OUTPUT -o eth0 -p udp -m udp --dport 51820 -j ACCEPT
+ip6tables -A OUTPUT -o eth0 -p tcp -m tcp --dport 1194 -j ACCEPT
+ip6tables -A OUTPUT -o eth0 -p udp -m udp --dport 1194 -j ACCEPT
+ip6tables -A OUTPUT -o eth0 -p tcp -m tcp --dport 443 -j ACCEPT
 
 ip6tables -A FORWARD -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 ip6tables -A FORWARD -i lo -j ACCEPT
-ip6tables -A FORWARD -d "${docker_networks}" -j ACCEPT
-ip6tables -A FORWARD -s "${docker_networks}" -j ACCEPT
+ip6tables -A FORWARD -i eth0 -d "${docker_networks}" -j ACCEPT
+ip6tables -A FORWARD -i eth0 -s "${docker_networks}" -j ACCEPT
 
 ip6tables -t nat -A POSTROUTING -o tap+ -j MASQUERADE
 ip6tables -t nat -A POSTROUTING -o tun+ -j MASQUERADE
