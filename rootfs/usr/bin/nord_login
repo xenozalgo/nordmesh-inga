@@ -2,7 +2,7 @@
 
 [[ -z "${PASS}" ]] && [[ -f "${PASSFILE}" ]] && PASS="$(head -n 1 "${PASSFILE}")"
 nordvpn logout > /dev/null
-nordvpn login --username "${USER}" --password "${PASS}" || {
+nordvpn login --legacy --username "${USER}" --password "${PASS}" || {
   echo "Invalid Username or password."
   exit 1
 }

@@ -1,7 +1,7 @@
 FROM s6on/ubuntu:20.04
 LABEL maintainer="Julio Gutierrez julio.guti+nordvpn@pm.me"
 
-ARG NORDVPN_VERSION=3.12.1-1
+ARG NORDVPN_VERSION=3.12.2
 ARG DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update -y && \
