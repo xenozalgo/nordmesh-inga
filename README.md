@@ -15,10 +15,10 @@ Official `NordVPN` client in a docker container; it makes routing traffic throug
 # How to use this image
 This container was designed to be started first to provide a connection to other containers (using `--net=container:vpn`, see below *Starting an NordVPN client instance*).
 
-**NOTE**: More than the basic privileges are needed for NordVPN. With docker 1.2 or newer you can use the `--cap-add=NET_ADMIN` option. Earlier versions, or with fig, and you'll have to run it in privileged mode.
+**NOTE**: More than the basic privileges are needed for NordVPN. With Docker 1.2 or newer, Podman, Kubernetes, etc. you can use the `--cap-add=NET_ADMIN,NET_RAW` option. Earlier versions, or with fig, and you'll have to run it in privileged mode.
 
 ## Starting an NordVPN instance
-    docker run -ti --cap-add=NET_ADMIN --name vpn \
+    docker run -ti --cap-add=NET_ADMIN,NET_RAW --name vpn \
                -e USER=user@email.com -e PASS='pas$word' \
                -e TECHNOLOGY=NordLynx -d ghcr.io/bubuntux/nordvpn
 
@@ -34,6 +34,7 @@ services:
     image: ghcr.io/bubuntux/nordvpn
     cap_add:
       - NET_ADMIN               # Required
+      - NET_RAW                 # Required
     environment:                # Review https://github.com/bubuntux/nordvpn#environment-variables
       - USER=user@email.com     # Required
       - "PASS=pas$word"         # Required
@@ -76,6 +77,7 @@ services:
     image: ghcr.io/bubuntux/nordvpn
     cap_add:
       - NET_ADMIN               # Required
+      - NET_RAW                 # Required
     environment:                # Review https://github.com/bubuntux/nordvpn#environment-variables
       - USER=user@email.com     # Required
       - "PASS=pas$word"         # Required
@@ -146,6 +148,7 @@ services:
     container_name: nordvpn
     cap_add:
       - NET_ADMIN               # Required
+      - NET_RAW                 # Required
     environment:                # Review https://github.com/bubuntux/nordvpn#environment-variables
       - USER=user@email.com     # Required
       - "PASS=pas$word"         # Required
