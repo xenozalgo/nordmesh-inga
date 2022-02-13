@@ -13,13 +13,8 @@ jobs:
         id: git
         run: |
           NAME=$(echo ${GITHUB_REF} | sed -e "s/.*\///g")
-          TAG=false
-          if [[ ${GITHUB_REF} == *"/tags/"* ]]; then
-            TAG=true
-          fi
-          echo name=${NAME}  tag=${TAG}  ref=${GITHUB_REF}
+          echo name=${NAME}  ref=${GITHUB_REF}
           echo "::set-output name=name::${NAME}"
-          echo "::set-output name=tag::${TAG}"
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
@@ -53,7 +48,7 @@ jobs:
       
       - name: Push latest
         uses: docker/build-push-action@v2
-        if: steps.git.outputs.tag == 'true'
+        if: steps.git.outputs.name == 'master'
         with:
           platforms: linux/amd64,linux/arm64,linux/arm/v7
           push: true
@@ -63,7 +58,7 @@ jobs:
 
       - name: Update repo description
         uses: peter-evans/dockerhub-description@v2
-        if: steps.git.outputs.tag == 'true'
+        if: steps.git.outputs.name == 'master'
         with:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
