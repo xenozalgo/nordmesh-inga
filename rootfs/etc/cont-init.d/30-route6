@@ -1,4 +1,4 @@
-#!/command/with-contenv bash
+#!/usr/bin/with-contenv bash
 
 [[ -n ${NETWORK6} && -z ${NET6_LOCAL} ]] && NET6_LOCAL=${NETWORK6}
 if [ -n "$NET6_LOCAL" ]; then
