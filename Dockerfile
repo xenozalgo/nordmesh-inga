@@ -21,4 +21,8 @@ RUN apt-get update -y && \
 
 COPY /rootfs /
 ENV S6_CMD_WAIT_FOR_SERVICES=1
-CMD nord_login && nord_config && nord_connect && nord_migrate && nord_watch
+CMD sleep 1 && nord_login && nord_config && nord_connect && nord_migrate && nord_watch
+RUN chmod 0755 -R /etc/cont-init.d && \
+    chmod 0755 -R /etc/services.d && \
+    chmod 0755 -R /usr/bin && \
+    echo "/command:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" > /etc/s6-overlay/config/global_path

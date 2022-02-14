@@ -1,4 +1,4 @@
-#!/usr/bin/with-contenv bash
+#!/command/with-contenv bash
 
 shopt -s nocasematch; if [[ "${TECHNOLOGY:-NordLynx}" =~ "NordLynx" ]]; then
   echo "############################################################"
