@@ -18,7 +18,7 @@ This container was designed to be started first to provide a connection to other
 **NOTE**: More than the basic privileges are needed for NordVPN. With Docker 1.2 or newer, Podman, Kubernetes, etc. you can use the `--cap-add=NET_ADMIN,NET_RAW` option. Earlier versions, or with fig, and you'll have to run it in privileged mode.
 
 ## Starting an NordVPN instance
-    docker run -ti --cap-add=NET_ADMIN,NET_RAW --name vpn \
+    docker run -ti --cap-add=NET_ADMIN --cap-add=NET_RAW --name vpn \
                -e USER=user@email.com -e PASS='pas$word' \
                -e TECHNOLOGY=NordLynx -d ghcr.io/bubuntux/nordvpn
 
