@@ -10,7 +10,7 @@
     <a href="https://github.com/bubuntux/nordvpn/actions?query=workflow%3Arelease"><img src="https://github.com/bubuntux/nordvpn/workflows/release/badge.svg"/></a>
 </p>
 
-Official `NordVPN` client in a docker container; it makes routing traffic through the `NordVPN` network easy.
+Official `NordVPN` client in a docker container; it makes routing traffic through the `NordVPN` network easy and secure with an integrated iptables kill switch.
 
 # How to use this image
 This container was designed to be started first to provide a connection to other containers (using `--net=container:vpn`, see below *Starting an NordVPN client instance*).
