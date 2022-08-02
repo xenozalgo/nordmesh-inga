@@ -75,6 +75,7 @@ services:
     restart: unless-stopped
   vpn:
     image: ghcr.io/bubuntux/nordvpn
+    container_name: vpn
     cap_add:
       - NET_ADMIN               # Required
       - NET_RAW                 # Required
@@ -87,7 +88,7 @@ services:
       - net.ipv6.conf.all.disable_ipv6=1  # Recomended if using ipv4 only
   torrent:
     image: ghcr.io/linuxserver/qbittorrent
-    network_mode: service:vpn
+    network_mode: container:vpn
     labels:
       - traefik.enable=true
       - traefik.http.services.torrent.loadbalancer.server.port=8080
