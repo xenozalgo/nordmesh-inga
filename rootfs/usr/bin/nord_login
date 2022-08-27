@@ -16,9 +16,17 @@ fi
 
 [[ -z "${PASS}" ]] && [[ -f "${PASSFILE}" ]] && PASS="$(head -n 1 "${PASSFILE}")"
 nordvpn logout > /dev/null
-nordvpn login --legacy --username "${USER}" --password "${PASS}" || {
-  echo "Invalid Username or password."
-  exit 1
-}
+
+if [[ -n ${TOKEN} ]]; then
+  nordvpn login --token "${TOKEN}" || {
+    echo "Invalid token."
+    exit 1
+  }
+else
+  nordvpn login --legacy --username "${USER}" --password "${PASS}" || {
+    echo "Invalid Username or password."
+    exit 1
+  }
+fi
 
 exit 0
