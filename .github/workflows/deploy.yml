@@ -58,5 +58,5 @@ jobs:
         if: github.ref_name == 'master'
         with:
           username: ${{ github.repository_owner }}
-          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
           repository: ${{ github.repository }}

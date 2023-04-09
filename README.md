@@ -7,7 +7,7 @@
     <a href="https://cloud.docker.com/u/bubuntux/repository/docker/bubuntux/nordvpn"><img src="https://badgen.net/docker/stars/bubuntux/nordvpn?icon=docker&label=stars"/></a>
     <a href="https://github.com/bubuntux/nordvpn"><img src="https://badgen.net/github/forks/bubuntux/nordvpn?icon=github&label=forks&color=black"/></a>
     <a href="https://github.com/bubuntux/nordvpn"><img src="https://badgen.net/github/stars/bubuntux/nordvpn?icon=github&label=stars&color=black"/></a>
-    <a href="https://github.com/bubuntux/nordvpn/actions?query=workflow%3Arelease"><img src="https://github.com/bubuntux/nordvpn/workflows/release/badge.svg"/></a>
+    <a href="https://github.com/bubuntux/nordvpn/actions/workflows/deploy.yml"><img src="https://github.com/bubuntux/nordvpn/actions/workflows/deploy.yml/badge.svg?branch=master"/></a>
 </p>
 
 Official `NordVPN` client in a docker container; it makes routing traffic through the `NordVPN` network easy and secure with an integrated iptables kill switch.
@@ -19,7 +19,7 @@ This container was designed to be started first to provide a connection to other
 
 ## Starting an NordVPN instance
     docker run -ti --cap-add=NET_ADMIN --cap-add=NET_RAW --name vpn \
-               -e USER=user@email.com -e PASS='pas$word' \
+               -e TOKEN=f6f2bb45... \
                -e TECHNOLOGY=NordLynx -d ghcr.io/bubuntux/nordvpn
 
 Once it's up other containers can be started using its network connection:
@@ -36,8 +36,7 @@ services:
       - NET_ADMIN               # Required
       - NET_RAW                 # Required
     environment:                # Review https://github.com/bubuntux/nordvpn#environment-variables
-      - USER=user@email.com     # Required
-      - "PASS=pas$word"         # Required
+      - TOKEN=f6f2bb45...     # Required
       - CONNECT=United_States
       - TECHNOLOGY=NordLynx
       - NETWORK=192.168.1.0/24  # So it can be accessed within the local network
@@ -80,8 +79,7 @@ services:
       - NET_ADMIN               # Required
       - NET_RAW                 # Required
     environment:                # Review https://github.com/bubuntux/nordvpn#environment-variables
-      - USER=user@email.com     # Required
-      - "PASS=pas$word"         # Required
+      - TOKEN=f6f2bb45...       # Required
       - CONNECT=United_States
       - TECHNOLOGY=NordLynx
     sysctls:
@@ -151,8 +149,7 @@ services:
       - NET_ADMIN               # Required
       - NET_RAW                 # Required
     environment:                # Review https://github.com/bubuntux/nordvpn#environment-variables
-      - USER=user@email.com     # Required
-      - "PASS=pas$word"         # Required
+      - TOKEN=f6f2bb45...       # Required
       - CONNECT=United_States
       - TECHNOLOGY=NordLynx
       - WHITELIST=showrss.info,rarbg.to,yts.mx
@@ -177,9 +174,9 @@ services:
 
 # ENVIRONMENT VARIABLES
 
-* `USER`     - User for NordVPN account.
-* `PASS`     - Password for NordVPN account, surrounding the password in single quotes will prevent issues with special characters such as `$`.
-* `TOKEN`     - Used in place of `USER` and `PASS` for NordVPN account, can be generated in the web portal
+* `USER`     - DEPRECATED. User for NordVPN account.
+* `PASS`     - DEPRECATED. Password for NordVPN account, surrounding the password in single quotes will prevent issues with special characters such as `$`.
+* `TOKEN`    - Used in place of `USER` and `PASS` for NordVPN account, can be generated in the web portal
 * `PASSFILE` - File from which to get `PASS`, if using [docker secrets](https://docs.docker.com/compose/compose-file/compose-file-v3/#secrets) this should be set to `/run/secrets/<secret_name>`. This file should contain just the account password on the first line.
 * `CONNECT`  -  [country]/[server]/[country_code]/[city]/[group] or [country] [city], if none provide you will connect to  the recommended server.
    - Provide a [country] argument to connect to a specific country. For example: Australia , Use `docker run --rm ghcr.io/bubuntux/nordvpn nordvpn countries` to get the list of countries.
