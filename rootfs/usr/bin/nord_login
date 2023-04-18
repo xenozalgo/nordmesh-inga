@@ -13,6 +13,7 @@ if ! iptables -L > /dev/null 2>&1; then
     sleep 3600
   done
 fi
+sleep 5
 
 [[ -z "${PASS}" ]] && [[ -f "${PASSFILE}" ]] && PASS="$(head -n 1 "${PASSFILE}")"
 nordvpn logout > /dev/null
