@@ -16,7 +16,7 @@ fi
 sleep 5
 
 [[ -z "${PASS}" ]] && [[ -f "${PASSFILE}" ]] && PASS="$(head -n 1 "${PASSFILE}")"
-nordvpn logout > /dev/null
+nordvpn logout --persist-token > /dev/null
 
 if [[ -n ${TOKEN} ]]; then
   nordvpn login --token "${TOKEN}" || {
