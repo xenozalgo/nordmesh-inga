@@ -18,7 +18,7 @@ while [ ! -S /run/nordvpn/nordvpnd.sock ] ; do
   sleep 1
 done
 
-[[ -z "${PASS}" ]] && [[ -f "${PASSFILE}" ]] && PASS="$(head -n 1 "${PASSFILE}")"
+[[ -z "${TOKEN}" ]] && [[ -f "${TOKENFILE}" ]] && TOKEN="$(head -n 1 "${TOKENFILE}")"
 nordvpn logout --persist-token > /dev/null
 
 if [[ -n ${TOKEN} ]]; then
@@ -27,10 +27,8 @@ if [[ -n ${TOKEN} ]]; then
     exit 1
   }
 else
-  nordvpn login --legacy --username "${USER}" --password "${PASS}" || {
-    echo "Invalid Username or password."
-    exit 1
-  }
+  echo "No token set."
+  exit 1
 fi
 
 exit 0
