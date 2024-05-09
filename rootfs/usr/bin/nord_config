@@ -9,6 +9,25 @@ nordvpn set technology ${TECHNOLOGY:-NordLynx}
 [[ -n ${FIREWALL} ]] && nordvpn set firewall ${FIREWALL}
 [[ -n ${MESHNET} ]] && nordvpn set meshnet ${MESHNET}
 
+# Configue local network and routing allow list
+if [[ -n ${MESHNET} ]]; then
+  allowedLocalHosts=${ALLOWROUTE}
+  if [[ -n ${allowedLocalHosts} ]]; then
+    IFS=',' read -ra allowed <<< "$allowedLocalHosts"
+    for host in "${allowed[@]}"; do
+      nordvpn meshnet peer local allow "${host}"
+    done
+  fi
+
+  allowedRoutingHosts=${ALLOWROUTE}
+  if [[ -n ${allowedRoutingHosts} ]]; then
+    IFS=',' read -ra allowed <<< "$allowedRoutingHosts"
+    for host in "${allowed[@]}"; do
+      nordvpn meshnet peer routing allow "${host}"
+    done
+  fi
+fi
+
 #[[ -n ${KILLSWITCH} ]] && nordvpn set killswitch ${KILLSWITCH} Killswitch is enabled by default using iptables
 
 [[ -n ${PROTOCOL} ]] && nordvpn set protocol ${PROTOCOL}
