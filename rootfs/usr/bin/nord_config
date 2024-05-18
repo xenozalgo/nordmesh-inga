@@ -8,7 +8,7 @@ nordvpn set technology ${TECHNOLOGY:-NordLynx}
 [[ -n ${OBFUSCATE} ]] && nordvpn set obfuscate ${OBFUSCATE}
 [[ -n ${FIREWALL} ]] && nordvpn set firewall ${FIREWALL}
 [[ -n ${MESHNET} ]] && nordvpn set meshnet ${MESHNET}
-[[ -n ${LAN_DISCOVERY} ]] && nordvnp set lan-discovery${LAN_DISCOVERY}
+[[ -n ${LAN_DISCOVERY} ]] && nordvnp set lan-discovery ${LAN_DISCOVERY}
 
 #[[ -n ${KILLSWITCH} ]] && nordvpn set killswitch ${KILLSWITCH} Killswitch is enabled by default using iptables
 
