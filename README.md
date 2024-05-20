@@ -203,6 +203,7 @@ services:
 * `MESHNET` - Enable or Disable.
 * `ALLOWLOCAL` - Comma delimited list of Meshnet devices you will allow to access this devices local network. For example 'ALLOWLOCAL=vpn-friction5976.nord,vpn-world2962.nord'
 * `ALLOWROUTE` - Comma delimited list of Meshnet devices you will allow to route though this device. For example 'ALLOWROUTE=vpn-friction5976.nord,vpn-world2962.nord'
+* `LAN_DISCOVERY` - on or off.
 
 
 # Issues
