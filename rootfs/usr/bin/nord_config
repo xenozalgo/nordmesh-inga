@@ -7,8 +7,22 @@ nordvpn set technology ${TECHNOLOGY:-NordLynx}
 [[ -n ${CYBER_SEC} ]] && nordvpn set cybersec ${CYBER_SEC}
 [[ -n ${OBFUSCATE} ]] && nordvpn set obfuscate ${OBFUSCATE}
 [[ -n ${FIREWALL} ]] && nordvpn set firewall ${FIREWALL}
-[[ -n ${MESHNET} ]] && nordvpn set meshnet ${MESHNET}
 [[ -n ${LAN_DISCOVERY} ]] && nordvnp set lan-discovery ${LAN_DISCOVERY}
+
+# Configue local network and routing allow list
+if [[ -n ${MESHNET} ]]; then
+  echo "Meshing..."
+  current_sleep=1
+  until nordvpn set meshnet on; do
+    if [ ${current_sleep} -gt 4096 ]; then
+      echo "Unable to mesh."
+      exit 1
+    fi
+    echo "Unable to mesh retrying in ${current_sleep} seconds."
+    sleep ${current_sleep}
+    current_sleep=$((current_sleep * 2))
+  done
+fi
 
 # Configue local network and routing allow list
 if [[ -n ${MESHNET} ]]; then
