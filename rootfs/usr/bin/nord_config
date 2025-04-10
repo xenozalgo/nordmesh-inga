@@ -7,7 +7,7 @@ nordvpn set technology ${TECHNOLOGY:-NordLynx}
 [[ -n ${CYBER_SEC} ]] && nordvpn set cybersec ${CYBER_SEC}
 [[ -n ${OBFUSCATE} ]] && nordvpn set obfuscate ${OBFUSCATE}
 [[ -n ${FIREWALL} ]] && nordvpn set firewall ${FIREWALL}
-[[ -n ${LAN_DISCOVERY} ]] && nordvnp set lan-discovery ${LAN_DISCOVERY}
+[[ -n ${LAN_DISCOVERY} ]] && nordvpn set lan-discovery ${LAN_DISCOVERY}
 
 # Configue local network and routing allow list
 if [[ -n ${MESHNET} ]]; then
