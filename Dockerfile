@@ -10,15 +10,9 @@ RUN apt-get update -y && \
     apt-get install -y /tmp/nordrepo.deb && \
     apt-get update -y && \
     apt-get install -y nordvpn${NORDVPN_VERSION:+=$NORDVPN_VERSION} && \
-    apt-get remove -y nordvpn-release && \
-    apt-get autoremove -y && \
-    apt-get autoclean -y && \
-    rm -rf \
-		/tmp/* \
-		/var/cache/apt/archives/* \
-		/var/lib/apt/lists/* \
-		/var/tmp/*
+    /etc/init.d/nordvpn start
+
 
 COPY /rootfs /
 ENV S6_CMD_WAIT_FOR_SERVICES=1
-CMD /etc/init.d/nordvpn start && nord_login && nord_config && nord_connect && nord_migrate && nord_watch
+CMD nord_login && nord_config && nord_connect && nord_migrate && nord_watch
